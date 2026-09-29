@@ -881,6 +881,54 @@
             align-items: center;
             margin-bottom: 8px;
         }
+
+
+		.footer-credits {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			margin: 40px auto 20px auto;
+			padding: 12px 24px;
+			width: fit-content;
+			background: rgba(255, 255, 255, 0.05);
+			border: 1px solid rgba(0, 0, 0, 0.08);
+			border-radius: 30px;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			font-size: 13px;
+			color: #666;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+			transition: all 0.3s ease;
+			cursor: default;
+		}
+		
+		/* Efeito ao passar o mouse */
+		.footer-credits:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+			background: #fff;
+			border-color: #ffc107; /* Cor de destaque (mude para combinar com seu layout) */
+			color: #222;
+		}
+		
+		/* Ícone de código (Developers) */
+		.footer-icon {
+			width: 16px;
+			height: 16px;
+			color: #ffc107; /* Cor do ícone de chaves de código */
+			transition: transform 0.3s ease;
+		}
+		
+		.footer-credits:hover .footer-icon {
+			transform: scale(1.15);
+		}
+		
+		/* Estilo do nome da marca */
+		.brand-name {
+			color: #222;
+			font-weight: 700;
+			letter-spacing: 0.5px;
+		}
     </style>
     <link id="favicon" rel="icon" type="image/png" href="https://scontent-gig4-2.cdninstagram.com/v/t51.82787-15/620417266_18105247282706287_2063464713456114473_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=103&ig_cache_key=MjM1NzgwOTY5NTc4OTg0NjY2MQ%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQueHBpZHMuMTAwNi5zZHIucmVndWxhcl9waG90by5DMyJ9&_nc_ohc=h--OE3p9ulYQ7kNvwEC-J1q&_nc_oc=AdoxfW0kqiYNj3f3DJHLBKKxKm0bFkkiPWVkGJ0gej0yPCGi0yNol7qL5FyU_U-fe68&_nc_zt=23&_nc_ht=scontent-gig4-2.cdninstagram.com&_nc_gid=rWqifgXu8BNB313Z3tsgkg&_nc_ss=70689&oh=00_AQM6pzni0dw_-Pf-sEOS1TL8zmYxex_Jp_YKrySWTCk4yw&oe=6AC19693">
 </head>
@@ -1507,14 +1555,19 @@
             `;
 
             const footerHtml = `
-                <footer class="footer-powered">
-                    <span class="footer-powered-link" onclick="openEmpresaPage()">
-                        powered by <strong><COMPREAQUIDEVS - BonAPPetit></strong>
-                    </span>
-                    <div class="legal-link-container">
+            <footer class="footer-powered">
+                <div class="footer-credits">
+		        <svg class="footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			        <polyline points="16 18 22 12 16 6"></polyline>
+			        <polyline points="8 6 2 12 8 18"></polyline>
+		            </svg>
+		            <span>powered by <strong class="brand-name">&lt;COMPREAQUIDEVS - BonAPPettit&gt;</strong></span>
+	                
+                </div>
+                <div class="legal-link-container">
                         <a class="legal-link" href="?page=politicas" target="_blank">Políticas e Termos de Uso</a>
-                    </div>
-                </footer>
+                </div>
+            </footer>
             `;
 
             container.innerHTML = `
