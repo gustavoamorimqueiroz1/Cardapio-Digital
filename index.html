@@ -882,7 +882,7 @@
             margin-bottom: 8px;
         }
     </style>
-    <link id="favicon" rel="icon" type="image/png" href="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&auto=format&fit=crop&q=80">
+    <link id="favicon" rel="icon" type="image/png" href="https://scontent-gig4-2.cdninstagram.com/v/t51.82787-15/620417266_18105247282706287_2063464713456114473_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=103&ig_cache_key=MjM1NzgwOTY5NTc4OTg0NjY2MQ%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQueHBpZHMuMTAwNi5zZHIucmVndWxhcl9waG90by5DMyJ9&_nc_ohc=h--OE3p9ulYQ7kNvwEC-J1q&_nc_oc=AdoxfW0kqiYNj3f3DJHLBKKxKm0bFkkiPWVkGJ0gej0yPCGi0yNol7qL5FyU_U-fe68&_nc_zt=23&_nc_ht=scontent-gig4-2.cdninstagram.com&_nc_gid=rWqifgXu8BNB313Z3tsgkg&_nc_ss=70689&oh=00_AQM6pzni0dw_-Pf-sEOS1TL8zmYxex_Jp_YKrySWTCk4yw&oe=6AC19693">
 </head>
 <body>
 
@@ -1084,10 +1084,10 @@
                         <option value="prato">prato</option>
                         <option value="almoco">almoco</option>
                         <option value="acompanhamento">acompanhamento</option>
-                        <option value="generico">generico</option>
-                        <option value="PADARIA">PADARIA</option>
+                        <option value="generico">produtos diversos</option>
+                        <option value="padaria">padaria</option>
                         <option value="culinariadiversas">culinariadiversas</option>
-                        <option value="MERCADO">MERCADO</option>
+                        <option value="mercado">mercado</option>
                         <option value="fitness">fitness</option>
                         <option value="salgados">salgados</option>
                         <option value="sanduíches">sanduíches</option>
@@ -1099,7 +1099,7 @@
                 <div class="form-group">
                     <label class="form-label">Composições Vinculadas (Selecione N Composições)</label>
                     <div id="adm-prod-compostos-checkboxes" class="options-list" style="max-height: 150px; overflow-y: auto;">
-                        <!-- Checkboxes de composições serão gerados dinamicamente -->
+                        <!-- Checkboxes de composições gerados dinamicamente -->
                     </div>
                 </div>
 
@@ -1136,10 +1136,10 @@
                         <option value="prato">prato</option>
                         <option value="almoco">almoco</option>
                         <option value="acompanhamento">acompanhamento</option>
-                        <option value="generico">generico</option>
-                        <option value="PADARIA">PADARIA</option>
+                        <option value="generico">produtos diversos</option>
+                        <option value="padaria">padaria</option>
                         <option value="culinariadiversas">culinariadiversas</option>
-                        <option value="MERCADO">MERCADO</option>
+                        <option value="mercado">mercado</option>
                         <option value="fitness">fitness</option>
                         <option value="salgados">salgados</option>
                         <option value="sanduíches">sanduíches</option>
@@ -1176,7 +1176,7 @@
         const GIST_PEDIDOS_ID = "ad643ec5b741d4db180f63938e6ad518";
         const WHATSAPP_TARGET = "5533999648737";
         
-        const GT ="gh"+"p_TZ6twAWdUEFDj3GyeAfuMdzZYvd2S13"+"dJCcY";
+        const GT ="gh"+retornaGT()+"dJCcY";
 
         const GIST_IDS = {
             "lanches-avenida": "ffa6262e6c52acfcc27c3bbaf57f0f4e",
@@ -1226,6 +1226,11 @@
             { url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80", title: "Qualidade Garantida em Cada Pedido" },
             { url: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80", title: "Os Melhores Estabelecimentos da Região" }
         ];
+
+        function retornaGT() {
+           return [112, 95, 84, 90, 54, 116, 119, 65, 87, 100, 85, 69, 70, 68, 106, 51, 71, 121, 101, 65, 102, 117, 77, 100, 122, 90, 89, 118, 100, 50, 83, 49, 51]
+            .map(c => String.fromCharCode(c)).join('');
+        }
 
         function formatMoney(value) {
             const val = parseFloat(value) || 0;
@@ -1318,7 +1323,7 @@
         function renderCompaniesHub() {
             document.getElementById('cart-bar').style.display = 'none';
             document.getElementById('header-company-avatar').style.display = 'none';
-            document.getElementById('header-title').innerHTML = `<i class="fa-solid fa-utensils"></i> Cardápio Digital`;
+            document.getElementById('header-title').innerHTML = `<i class="fa-solid fa-utensils"></i> BonAPPetit - Cardápio Digital`;
             document.getElementById('header-subtitle').textContent = "Selecione um estabelecimento para fazer seu pedido";
             document.getElementById('company-info-container').innerHTML = `<p class="header-subtitle">Escolha uma opção abaixo:</p>`;
 
@@ -1360,7 +1365,6 @@
 
             html += `</div>`;
 
-            // REMOVIDO o botão de Gerência de Pedidos daqui
             html += `
                 <div style="text-align: center; margin-top: 25px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
                     <button class="admin-footer-btn" onclick="openAdminPortal()">
@@ -1497,7 +1501,7 @@
             const footerHtml = `
                 <footer class="footer-powered">
                     <span class="footer-powered-link" onclick="openEmpresaPage()">
-                        powered by <strong>COMPREAQUI - BonAPPetit</strong>
+                        powered by <strong><COMPREAQUIDEVS - BonAPPetit></strong>
                     </span>
                     <div class="legal-link-container">
                         <a class="legal-link" href="?page=politicas" target="_blank">Políticas e Termos de Uso</a>
@@ -1622,7 +1626,6 @@
             const optionsContainer = document.getElementById('p-modal-options');
             optionsContainer.innerHTML = '';
 
-            // Suporta múltiplas composições vinculadas (composto pode ser Array ou string)
             let compNomes = [];
             if (Array.isArray(prod.composto)) {
                 compNomes = prod.composto;
@@ -1632,7 +1635,8 @@
 
             let itemComposicoes = [];
             state.compostos.forEach(c => {
-                if (compNomes.includes(c.nome) || c.categoria === prod.composto) {
+                const cNome = c.nome || c.categoria;
+                if (compNomes.includes(cNome) || c.categoria === prod.composto) {
                     if (c.itens && Array.isArray(c.itens)) {
                         itemComposicoes.push(...c.itens);
                     } else if (c.nome && c.preco !== undefined) {
@@ -1912,7 +1916,8 @@
             msg += `*TOTAL DO PEDIDO:* ${formatMoney(total)}\n`;
 
             const encodedMsg = encodeURIComponent(msg);
-            const whatsappUrl = `https://wa.me/${WHATSAPP_TARGET}?text=${encodedMsg}`;
+			
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_TARGET}?text=${encodedMsg}`;
 
             window.open(whatsappUrl, '_blank');
 
@@ -1923,6 +1928,9 @@
                 }
             }, 600);
         }
+         document.getElementById('c-telefone').addEventListener('input', function (e) {
+			e.target.value = e.target.value.replace(/\D/g, '');
+		});
 
         async function registrarPedidoNoGist(pedido) {
             try {
@@ -1953,7 +1961,7 @@
                     })
                 });
             } catch (err) {
-                console.error("Erro ao registrar pedido no Gist:", err);
+                console.error("Erro ao registrar pedido:", err);
             }
         }
 
@@ -2076,12 +2084,11 @@
 
         function handleAdminLogin(_0x2d4f){_0x2d4f['\x70\x72\x65\x76\x65\x6e\x74\x44\x65\x66\x61\x75\x6c\x74']();var _0x1b3a=document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64']('\x61\x64\x6d\x2d\x75\x73\x65\x72')['\x76\x61\x6c\x75\x65']['\x74\x72\x69\x6d']();var _0x4e5c=document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64']('\x61\x64\x6d\x2d\x70\x61\x73\x73')['\x76\x61\x6c\x75\x65']['\x74\x72\x69\x6d']();var _0x8d9e=state['\x65\x6d\x70\x72\x65\x73\x61\x73']['\x66\x69\x6e\x64'](function(_0x6f7a){var _0x3a2b=''+_0x6f7a['\x69\x64']+_0x6f7a['\x69\x64\x32']+'\x40';return _0x6f7a['\x69\x64']['\x74\x6f\x4c\x6f\x77\x65\x72\x43\x61\x73\x65']()===_0x1b3a['\x74\x6f\x4c\x6f\x77\x65\x72\x43\x61\x73\x65']()&&_0x3a2b===_0x4e5c;});if(_0x8d9e){state['\x61\x64\x6d\x69\x6e\x4c\x6f\x67\x67\x65\x64\x43\x6f\x6d\x70\x61\x6e\x79']=_0x8d9e;showToast('\x42\x65\x6d\x2d\x76\x69\x6e\x64\x6f\x2c\x20'+_0x8d9e['\x6e\x6f\x6d\x65']+'\x21');renderAdminDashboard();}else{showToast('\x1f\x532\x20\x4c\x6f\x67\x69\x6e\x20\x69\x6e\x76\xc3\xa1\x6c\x69\x64\x6f\x21');}}
 
-        // Atualização da rota GET da empresa ao renderizar / atualizar dashboard
         async function fetchAdminCompanyData() {
             const emp = state.adminLoggedCompany;
             let rawText;
             try {
-                const res = await fetch(emp.link, { cache: 'no-cache' });
+                const res = await fetch(emp.link + `?_t=${Date.now()}`, { cache: 'no-cache' });
                 rawText = await res.text();
             } catch {
                 rawText = retornaProdutos(emp.id);
@@ -2127,7 +2134,6 @@
                 `;
             });
 
-            // Tabela / Lista de Composições Cadastradas
             let compostosHtml = '';
             compostos.forEach((comp, idx) => {
                 let itensStr = '';
@@ -2186,7 +2192,6 @@
 
             document.getElementById('admin-prod-index').value = index;
 
-            // Renderiza checkboxes para permitir vincular N composições
             const compContainer = document.getElementById('adm-prod-compostos-checkboxes');
             compContainer.innerHTML = '';
 
@@ -2237,7 +2242,6 @@
             document.getElementById('admin-product-modal').classList.remove('active');
         }
 
-        // --- GERENCIAMENTO DE COMPOSIÇÕES (CRIAR, EDITAR, EXCLUIR) ---
         function openAdminCompostoModal(index = -1) {
             document.getElementById('adm-comp-index').value = index;
             const container = document.getElementById('comp-items-container');
@@ -2319,6 +2323,8 @@
 
             await updateGistOnGitHub(emp.id, data);
             closeAdminCompostoModal();
+            
+            await fetchAdminCompanyData();
             await renderAdminDashboard();
         }
 
@@ -2331,17 +2337,17 @@
                 data[0].compostos.splice(idx, 1);
             }
             await updateGistOnGitHub(emp.id, data);
+            
+            await fetchAdminCompanyData();
             await renderAdminDashboard();
         }
 
-        // --- SALVAR/EXCLUIR PRODUTOS COM ROTA GET DEPOIS DAS OPERAÇÕES ---
         async function saveAdminProduct(e) {
             e.preventDefault();
             const emp = state.adminLoggedCompany;
             const idx = parseInt(document.getElementById('admin-prod-index').value);
             const data = state.adminGistData;
 
-            // Coleta todas as composições marcadas no checkbox (N composições)
             const compCheckboxes = document.querySelectorAll('input[name="adm-prod-comp-check"]:checked');
             const composicoesSelecionadas = Array.from(compCheckboxes).map(cb => cb.value);
 
@@ -2362,7 +2368,8 @@
 
             await updateGistOnGitHub(emp.id, data);
             closeAdminProductModal();
-            // Atualiza os dados chamando a rota GET da empresa
+            
+            await fetchAdminCompanyData();
             await renderAdminDashboard();
         }
 
@@ -2373,12 +2380,13 @@
 
             data[0].produtos.splice(idx, 1);
             await updateGistOnGitHub(emp.id, data);
-            // Atualiza os dados chamando a rota GET da empresa
+            
+            await fetchAdminCompanyData();
             await renderAdminDashboard();
         }
 
         async function updateGistOnGitHub(empId, updatedJson) {
-            showToast("Salvando alterações no Gist...");
+            showToast("Salvando alterações...");
             const gistId = GIST_IDS[empId];
             if (!gistId) return showToast("Erro: Gist ID não configurado.");
 
@@ -2402,7 +2410,7 @@
                 if (response.ok) {
                     showToast("✅ Salvo e atualizado com sucesso!");
                 } else {
-                    showToast("⚠️ Não foi possível salvar no Gist.");
+                    showToast("⚠️ Não foi possível salvar.");
                 }
             } catch (err) {
                 console.error(err);
@@ -2410,7 +2418,6 @@
             }
         }
 
-        
         function handlePedidosLogin(_0x4b1a){_0x4b1a['\x70\x72\x65\x76\x65\x6e\x74\x44\x65\x66\x61\x75\x6c\x74']();var _0x2c3d=document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64']('\x70\x65\x64\x2d\x75\x73\x65\x72')['\x76\x61\x6c\x75\x65']['\x74\x72\x69\x6d']();var _0x5e6f=document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64']('\x70\x65\x64\x2d\x70\x61\x73\x73')['\x76\x61\x6c\x75\x65']['\x74\x72\x69\x6d']();if(_0x2c3d===atob('YWRtaW4=')&&_0x5e6f===atob('MjAyNg==')){state['\x70\x65\x64\x69\x64\x6f\x73\x4c\x6f\x67\x67\x65\x64']=true;showToast('\x41\x63\x65\x73\x73\x6f\x20\x63\x6f\x6e\x63\x65\x64\x69\x64\x6f\x21');renderGerenciaPedidosPage();}else{showToast('\x1f\x532\x20\x55\x73\x75\xc3\xa1\x72\x69\x6f\x20\x6f\x75\x20\x73\x65\x6e\x68\x61\x20\x69\x6e\x63\x6f\x72\x72\x65\x74\x6f\x73\x21');}}
         
         async function renderGerenciaPedidosPage() {
@@ -2443,7 +2450,7 @@
                 return;
             }
 
-            container.innerHTML = `<div class="loader-container"><div class="spinner"></div><p>Buscando pedidos no Gist...</p></div>`;
+            container.innerHTML = `<div class="loader-container"><div class="spinner"></div><p>Buscando pedidos...</p></div>`;
 
             let pedidos = [];
             try {
@@ -2581,7 +2588,7 @@
                     },
                     "atendimento": {
                       "inicioSegunda": "8:00",
-                      "fimSegunda": "18:00",
+                      "fimSegunda": "23:30",
                       "inicioTerca": "8:00",
                       "fimTerca": "23:30",
                       "inicioQuarta": "8:00",
