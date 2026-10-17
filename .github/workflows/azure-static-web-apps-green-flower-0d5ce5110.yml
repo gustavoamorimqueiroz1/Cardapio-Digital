@@ -18,7 +18,8 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      # Updated from v4 to v5 to remove the Node 20 warning
+      - uses: actions/checkout@v5 
         with:
           submodules: true
           lfs: false
@@ -29,9 +30,9 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_FLOWER_0D5CE5110 }}
           action: "upload"
-          app_location: "/" 
-          api_location: "" 
-          output_location: "." 
+          app_location: "/"
+          api_location: ""
+          output_location: "."
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
