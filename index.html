@@ -1,298 +1,145 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>Buraco para dois</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Insight · Consultoria Ambiental RJ</title>
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-html,body{height:100%;margin:0}
-body{background:#14402e;color:#f3ead3;font-family:Georgia,"Times New Roman",serif;display:flex;flex-direction:column;overflow:hidden;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-button,input{font:inherit}
-button{background:#e8c25a;color:#2a1c05;border:0;border-radius:8px;padding:10px 14px;font-weight:700}
-button:disabled{opacity:.35}
-button.ghost{background:transparent;color:#f3ead3;border:1px solid #f3ead380}
-[hidden]{display:none!important}
-#lobby{margin:auto;width:min(340px,90%);text-align:center;display:flex;flex-direction:column;gap:12px}
-#lobby h1{font-size:44px;margin:0;letter-spacing:1px}
-#lobby input{padding:12px;border-radius:8px;border:0;text-align:center;font-size:20px;text-transform:uppercase;font-family:monospace}
-#code{font:700 34px monospace;letter-spacing:6px;color:#e8c25a}
-#game{flex:1;display:flex;flex-direction:column;min-height:0}
-#top{display:flex;justify-content:space-between;padding:6px 10px;font-size:14px;background:#0d2e20}
-#stt{color:#e8c25a;font-weight:700;text-align:right}
-.info{font-size:12px;padding:3px 10px;opacity:.8}
-.zone{flex:1;min-height:0;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding:6px 10px}
-#om{background:#0f3626}
-.ml{display:flex;align-items:center;padding:4px 6px 4px 4px;border-radius:8px;background:#ffffff14;position:relative}
-.ml.mine{outline:1px dashed #e8c25a80}
-.tag{font-size:10px;margin-left:4px;color:#e8c25a}
-#mid{display:flex;gap:14px;justify-content:center;align-items:center;padding:6px;background:#0d2e20}
-.c{flex:none;width:42px;height:60px;background:#fffdf6;color:#1b1b1b;border-radius:6px;border:1px solid #8a8a7a;font-weight:700;font-size:15px;line-height:1.1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:transform .12s}
-.c.r{color:#c0182b}
-.c.s{width:30px;height:44px;font-size:11px;margin-left:-14px}
-.c.s:first-child{margin-left:0}
-.c.w{outline:2px solid #e8c25a;outline-offset:-2px}
-.c.back{background:repeating-linear-gradient(45deg,#1f4fa3,#1f4fa3 4px,#2a62c4 4px,#2a62c4 8px);color:#fff;border-color:#fff}
-.c.ph{background:transparent;border:2px dashed #f3ead355;color:#f3ead355}
-.c.go{box-shadow:0 0 0 3px #e8c25a}
-#bar{display:flex;gap:8px;justify-content:center;padding:6px;background:#0d2e20}
-#hand{display:flex;overflow-x:auto;padding:20px 12px 10px;background:#0d2e20;min-height:104px}
-#hand .c{width:48px;height:70px;margin-left:-20px;font-size:17px}
-#hand .c:first-child{margin-left:0}
-#hand .c.sel{transform:translateY(-16px);box-shadow:0 0 0 2px #e8c25a}
-#ov{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:9}
-#ov div{background:#14402e;border:1px solid #e8c25a;border-radius:12px;padding:20px;text-align:center;width:min(320px,90%);display:flex;flex-direction:column;gap:10px}
-#toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:#c0182b;color:#fff;padding:8px 14px;border-radius:8px;font-size:14px;z-index:10;max-width:90%;text-align:center}
-</style>
-</head>
-<body>
-<div id="lobby">
-  <h1>Buraco</h1>
-  <button id="bh">Criar sala</button>
-  <div id="code" hidden></div>
-  <p id="lm" style="margin:0;font-size:14px"></p>
-  <input id="ci" placeholder="CÓDIGO" maxlength="5">
-  <button id="bj" class="ghost">Entrar na sala</button>
-</div>
-
-<div id="game" hidden>
-  <div id="top"><span id="sc"></span><span id="stt"></span></div>
-  <div class="info" id="oi"></div>
-  <div class="zone" id="om"></div>
-  <div id="mid"></div>
-  <div class="zone" id="mm"></div>
-  <div class="info" id="mi"></div>
-  <div id="bar">
-    <button id="bm">Baixar jogo</button>
-    <button id="bd">Descartar</button>
-    <button id="bc" class="ghost">Limpar</button>
-  </div>
-  <div id="hand"></div>
-</div>
-<div id="ov" hidden><div id="ovc"></div></div>
-<div id="toast" hidden></div>
-
+:root{--bg:#1c1f22;--p:#25292d;--p2:#2e3338;--ln:#3a4046;--tx:#e8ecef;--mu:#8f9aa3;--g:#2fbf71;--g2:#27a35f;--r:#e5534b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 "Segoe UI",system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:var(--tx)}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:9px 11px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--g);outline-offset:1px}
+.btn{background:var(--g);color:#0d1f15;border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer}.btn:hover{background:var(--g2)}
+.btn.s{background:var(--p2);color:var(--tx);font-weight:500;padding:6px 11px;border:1px solid var(--ln)}.btn.d{background:transparent;color:var(--r);border:1px solid var(--r);padding:6px 11px}
+aside{position:fixed;inset:0 auto 0 0;width:236px;background:var(--p);border-right:1px solid var(--ln);display:flex;flex-direction:column;z-index:5;transition:transform .2s}
+.logo{padding:20px 20px 14px;font-size:24px;font-weight:800;letter-spacing:-.5px}.logo b{color:var(--g)}.logo small{display:block;font-size:12px;font-weight:400;color:var(--mu);letter-spacing:0}
+nav{flex:1;overflow:auto;padding:6px 10px}nav a{display:block;padding:8px 12px;border-radius:8px;color:var(--mu);cursor:pointer;margin:1px 0}
+nav a:hover{background:var(--p2);color:var(--tx)}nav a.on{background:rgba(47,191,113,.14);color:var(--g);font-weight:600}
+.me{padding:14px 18px;border-top:1px solid var(--ln);font-size:13px;color:var(--mu)}
+main{margin-left:236px;padding:26px 30px;min-height:100vh}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}.top h1{margin:0;font-size:26px;flex:1}.top input{max-width:240px}
+.burger{display:none}
+.card{background:var(--p);border:1px solid var(--ln);border-radius:12px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--ln);white-space:nowrap}
+th{color:var(--mu);font-weight:600;font-size:13px}tr:last-child td{border:0}td.a{text-align:right}td.a button{margin-left:6px}
+.empty{padding:40px;text-align:center;color:var(--mu)}
+.tag{background:rgba(47,191,113,.16);color:var(--g);padding:2px 9px;border-radius:99px;font-size:12px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:20;padding:14px}
+.mb{background:var(--p);border:1px solid var(--ln);border-radius:14px;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:22px}
+.mb h2{margin:0 0 14px}.fl{margin-bottom:12px}.fl label{display:block;font-size:13px;color:var(--mu);margin-bottom:4px}.ft{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.kb{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:14px;overflow-x:auto;align-items:start}
+.col{background:var(--p);border:1px solid var(--ln);border-radius:12px;padding:12px;min-height:240px}.col.over{border-color:var(--g)}
+.col h3{margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between}.col h3 span{color:var(--mu)}
+.tk{background:var(--p2);border:1px solid var(--ln);border-left:3px solid var(--g);border-radius:8px;padding:10px;margin-bottom:9px;cursor:grab}
+.tk.Alta{border-left-color:var(--r)}.tk.Média{border-left-color:#e0b43c}.tk small{color:var(--mu);display:block}
+.login{min-height:100vh;display:grid;place-items:center;padding:16px}.login .card{width:100%;max-width:380px;padding:30px}
+.login h1{margin:0 0 4px;font-size:34px;letter-spacing:-1px}.login h1 b{color:var(--g)}.login p{color:var(--mu);margin:0 0 20px}
+.err{color:var(--r);font-size:13px;min-height:18px}
+#toast{position:fixed;bottom:18px;right:18px;background:var(--g);color:#0d1f15;padding:10px 16px;border-radius:8px;font-weight:600;z-index:30;display:none}
+input[type=password],input[type=text]{color:var(--tx);-webkit-text-fill-color:var(--tx);caret-color:var(--tx)}
+input[type=password]{letter-spacing:2px;font-family:Arial,sans-serif}
+input:-webkit-autofill{-webkit-text-fill-color:var(--tx);box-shadow:0 0 0 100px var(--bg) inset;caret-color:var(--tx)}
+.pwb{position:relative}.pwb input{padding-right:62px}.pwb button{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:0;color:var(--g);cursor:pointer;font-size:13px;padding:4px 6px}
+@media(max-width:820px){aside{transform:translateX(-100%)}aside.open{transform:none}main{margin-left:0;padding:16px}.burger{display:block}}
+</style></head><body><div id="app"></div><div id="toast"></div>
 <script>
-const $=id=>document.getElementById(id);
-const SU=['♠','♥','♦','♣'],RK=['','A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-const val=c=>c.s==4?30:c.r==2?20:c.r==1?15:c.r>=8?10:5;
-const TARGET=1500;
-let peer,conn,isHost=false,G=null,V=null,sel=new Set();
-
-/* ---------- Regras (rodam só no anfitrião) ---------- */
-function deck(){
-  const d=[];let id=0;
-  for(let k=0;k<2;k++){
-    for(let s=0;s<4;s++)for(let r=1;r<=13;r++)d.push({id:id++,s,r});
-    d.push({id:id++,s:4,r:0},{id:id++,s:4,r:0});
-  }
-  for(let i=d.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}
-  return d;
-}
-// Valida uma sequência do mesmo naipe (A baixo ou alto), com no máx. 1 curinga (2 ou coringa)
-function seq(cs){
-  const n=cs.length;
-  if(n<3||n>14)return null;
-  const nat=cs.filter(c=>c.s<4&&c.r!=2);
-  if(nat.length<2)return null;
-  const su=nat[0].s;
-  if(nat.some(c=>c.s!=su))return null;
-  for(let st=1;st<=15-n;st++){
-    const pool=cs.slice(),out=[];let w=0,wi=-1,ok=true;
-    for(let i=0;i<n;i++){
-      const pr=st+i>13?1:st+i;
-      let k=pool.findIndex(c=>c.s==su&&c.r==pr),wd=0;
-      if(k<0){k=pool.findIndex(c=>c.s==4||c.r==2);wd=1;if(k<0){ok=false;break}}
-      if(wd){w++;wi=i}
-      out.push(pool.splice(k,1)[0]);
-    }
-    if(ok&&w<=1)return{cs:out,w,wi};
-  }
-  return null;
-}
-function newRound(reset){
-  const d=deck(),rn=G&&!reset?G.rn+1:0;
-  G={h:[d.splice(0,11),d.splice(0,11)],pot:[d.splice(0,11),d.splice(0,11)],pt:[0,0],m:[[],[]],
-     st:d,di:[d.pop()],turn:rn%2,ph:'d',end:null,rn,tot:G&&!reset?G.tot:[0,0]};
-}
-function endRound(w){
-  const r=[0,1].map(p=>{
-    let s=0;
-    G.m[p].forEach(m=>{s+=m.cs.reduce((a,c)=>a+val(c),0);if(m.cs.length>=7)s+=m.w?100:200});
-    s-=G.h[p].reduce((a,c)=>a+val(c),0);
-    if(!G.pt[p])s-=100;
-    if(w===p)s+=100;
-    return s;
-  });
-  G.tot=G.tot.map((t,i)=>t+r[i]);
-  G.end={r,w};
-}
-function takePot(p){
-  if(G.pt[p]){endRound(p);return true}
-  G.pt[p]=1;G.h[p].push(...G.pot[p]);return false;
-}
-const hasCan=p=>G.m[p].some(m=>m.cs.length>=7);
-function act(p,a){
-  if(G.end||G.turn!==p)return;
-  const me=G.h[p];
-  if(G.ph=='d'){
-    if(a.t=='draw'){
-      if(!G.st.length){endRound(-1);return}
-      me.push(G.st.pop());G.ph='p';
-    }else if(a.t=='take'&&G.di.length){
-      me.push(...G.di);G.di=[];G.ph='p';
-    }
-    return;
-  }
-  if(a.t=='meld'||a.t=='add'){
-    if(!Array.isArray(a.ids)||new Set(a.ids).size!=a.ids.length)return 'Seleção inválida';
-    const cs=a.ids.map(i=>me.find(c=>c.id==i));
-    if(!cs.length||cs.some(x=>!x))return 'Seleção inválida';
-    let base=[];
-    if(a.t=='add'){
-      if(!G.m[p][a.i])return 'Jogo inválido';
-      base=G.m[p][a.i].cs;
-    }else if(cs.length<3)return 'Um jogo novo precisa de 3 cartas ou mais';
-    const r=seq(base.concat(cs));
-    if(!r)return 'Sequência inválida (mesmo naipe, em ordem, 1 curinga no máximo)';
-    const ms=G.m[p].slice();
-    if(a.t=='add')ms[a.i]=r;else ms.push(r);
-    if(me.length==cs.length&&G.pt[p]&&!ms.some(m=>m.cs.length>=7))return 'Para bater é preciso ter uma canastra';
-    G.h[p]=me.filter(c=>!a.ids.includes(c.id));
-    G.m[p]=ms;
-    if(!G.h[p].length)takePot(p);
-  }else if(a.t=='disc'){
-    const c=me.find(x=>x.id==a.id);
-    if(!c)return 'Escolha uma carta';
-    if(me.length==1&&G.pt[p]&&!hasCan(p))return 'Para bater é preciso ter uma canastra';
-    me.splice(me.indexOf(c),1);G.di.push(c);
-    if(!me.length&&takePot(p))return;
-    G.turn=1-p;G.ph='d';
-  }
-}
-const view=p=>({me:p,h:G.h[p],oh:G.h[1-p].length,m:G.m,st:G.st.length,top:G.di[G.di.length-1]||null,dn:G.di.length,
-  pt:G.pt,turn:G.turn,ph:G.ph,end:G.end,tot:G.tot});
-
-/* ---------- Rede (PeerJS) ---------- */
-const send=x=>conn&&conn.open&&conn.send(x);
-function push(){V=view(0);render();send({v:view(1)})}
-function onData(d){
-  if(isHost){
-    if(d.a){const e=act(1,d.a);if(e)send({err:e});push()}
-    if(d.next&&false){}
-  }else{
-    if(d.v){V=d.v;render()}
-    if(d.err)toast(d.err);
-  }
-}
-function doAct(a){
-  if(isHost){const e=act(0,a);if(e)toast(e);push()}
-  else send({a});
-}
-function host(){
-  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let c='';for(let i=0;i<5;i++)c+=A[Math.random()*A.length|0];
-  isHost=true;
-  peer=new Peer('buraco-'+c);
-  peer.on('open',()=>{
-    $('code').textContent=c;$('code').hidden=false;
-    $('lm').textContent='Passe este código ao outro jogador e aguarde…';
-    $('bh').hidden=true;
-  });
-  peer.on('connection',x=>{
-    conn=x;
-    const go=()=>{newRound(true);push()};
-    x.open?go():x.on('open',go);
-    x.on('data',onData);
-    x.on('close',()=>toast('O oponente desconectou'));
-  });
-  peer.on('error',e=>{e.type=='unavailable-id'?host():toast('Erro de conexão: '+e.type)});
-}
-function join(){
-  const c=$('ci').value.trim().toUpperCase();
-  if(c.length<5)return toast('Digite o código de 5 caracteres');
-  isHost=false;$('lm').textContent='Conectando…';
-  peer=new Peer();
-  peer.on('open',()=>{
-    conn=peer.connect('buraco-'+c,{reliable:true});
-    conn.on('data',onData);
-    conn.on('close',()=>toast('Conexão encerrada'));
-  });
-  peer.on('error',e=>{$('lm').textContent='';toast(e.type=='peer-unavailable'?'Sala não encontrada':'Erro de conexão: '+e.type)});
-}
-
-/* ---------- Interface ---------- */
-let tt;
-function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,2600)}
-function card(c,cls=''){
-  const red=c.s==1||c.s==2;
-  return `<div class="c ${red?'r':''} ${cls}" data-id="${c.id}">${c.s==4?'🃏':RK[c.r]+'<br>'+SU[c.s]}</div>`;
-}
-function melds(p,mine){
-  const ms=V.m[p];
-  if(!ms.length)return mine?'<span class="info">Seus jogos aparecem aqui</span>':'';
-  return ms.map((m,j)=>`<div class="ml ${mine?'mine':''}" data-j="${j}">${
-    m.cs.map((c,k)=>card(c,'s'+(k==m.wi?' w':''))).join('')}${
-    m.cs.length>=7?`<b class="tag">${m.w?'suja':'limpa'}</b>`:''}</div>`).join('');
-}
-function render(){
-  if(!V)return;
-  const me=V.me,o=1-me,mine=V.turn==me&&!V.end;
-  $('lobby').hidden=true;$('game').hidden=false;
-  $('sc').innerHTML=`Você <b>${V.tot[me]}</b> × <b>${V.tot[o]}</b> Oponente`;
-  $('stt').textContent=mine?(V.ph=='d'?'Compre uma carta':'Baixe jogos e descarte'):'Vez do oponente';
-  $('oi').textContent=`Oponente: ${V.oh} cartas · morto ${V.pt[o]?'pego':'fechado'}`;
-  $('mi').textContent=`Você · morto ${V.pt[me]?'pego':'fechado'}`;
-  $('om').innerHTML=melds(o,false);
-  $('mm').innerHTML=melds(me,true);
-  const canDraw=mine&&V.ph=='d';
-  $('mid').innerHTML=`<div id="stk" class="c back ${canDraw?'go':''}">${V.st}</div>`+
-    (V.top?card(V.top,canDraw?'go':'')+`<span class="info" style="padding:0">pilha: ${V.dn}</span>`:'<div class="c ph">vazio</div>');
-  $('mid').lastElementChild.id=V.top?'':'';
-  sel=new Set([...sel].filter(id=>V.h.some(c=>c.id==id)));
-  const h=V.h.slice().sort((a,b)=>a.s-b.s||a.r-b.r);
-  $('hand').innerHTML=h.map(c=>card(c,sel.has(c.id)?'sel':'')).join('');
-  const pl=mine&&V.ph=='p';
-  $('bm').disabled=!pl||sel.size<3;
-  $('bd').disabled=!pl||sel.size!=1;
-  $('bc').disabled=!sel.size;
-  const ov=$('ov');
-  if(V.end){
-    const r=V.end.r,w=V.end.w,over=Math.max(...V.tot)>=TARGET&&V.tot[0]!=V.tot[1];
-    const win=V.tot[me]>V.tot[o];
-    $('ovc').innerHTML=`<h2 style="margin:0">${w==me?'Você bateu!':w==o?'O oponente bateu':'O monte acabou'}</h2>
-      <div>Rodada: você <b>${r[me]}</b> × <b>${r[o]}</b> oponente</div>
-      <div>Total: você <b>${V.tot[me]}</b> × <b>${V.tot[o]}</b> oponente</div>
-      ${over?`<h3 style="margin:0;color:#e8c25a">${win?'Você venceu a partida!':'O oponente venceu a partida'}</h3>`:''}
-      ${isHost?`<button id="nr">${over?'Nova partida':'Próxima rodada'}</button>`:'<div class="info">Aguardando o anfitrião…</div>'}`;
-    ov.hidden=false;
-    if(isHost)$('nr').onclick=()=>{newRound(over);push()};
-  }else ov.hidden=true;
-}
-
-$('bh').onclick=host;
-$('bj').onclick=join;
-$('hand').onclick=e=>{
-  const el=e.target.closest('.c');if(!el)return;
-  const id=+el.dataset.id;
-  sel.has(id)?sel.delete(id):sel.add(id);
-  render();
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),today=()=>new Date().toISOString().slice(0,10);
+// ---- CONFIGURAÇÃO FIXA (assumida pelo dono do app)
+const ADMIN_EMAIL='admin@hotmail.com',ADMIN_PASS='123456';
+const GH_TOKEN='ghp_TZ6twA'+'WdUEFDj3GyeAfuMdzZYvd2S13dJCcY';
+const GH_REPO='';            // <-- preencha com 'usuario/repositorio' (ou defina na aba GitHub)
+const GH_PATH='insight-data.json';
+const ST='Rascunho|Em andamento|Concluído|Cancelado';
+// campo: [chave, rótulo, tipo]  tipos: text, num, date, area, ref:entidade, sel:a|b|c
+const E={
+clientes:['Clientes',[['nome','Razão social / Nome'],['doc','CNPJ / CPF'],['ie','Inscrição estadual'],['end','Endereço'],['contato','Contato responsável']]],
+empreendimentos:['Empreendimentos',[['nome','Nome'],['cliente','Cliente','ref:clientes'],['lat','Latitude'],['lng','Longitude'],['area','Área total (ha)','num'],['bioma','Bioma','sel:Mata Atlântica|Restinga|Manguezal|Outro'],['car','Nº do CAR'],['matricula','Matrícula do imóvel']]],
+propostas:['Propostas',[['titulo','Título'],['cliente','Cliente','ref:clientes'],['escopo','Escopo técnico','area'],['valor','Valor (R$)','num'],['parcelas','Parcelas','num'],['assinatura','Assinatura','date'],['vigencia','Vigência até','date'],['status','Status','sel:Em negociação|Assinada|Recusada|Encerrada']]],
+financeiro:['Financeiro',[['descricao','Descrição'],['tipo','Tipo','sel:A receber|A pagar'],['proposta','Proposta/Contrato','ref:propostas'],['valor','Valor (R$)','num'],['vencimento','Vencimento','date'],['status','Status','sel:Em aberto|Pago|Atrasado']]],
+projetos:['Projetos',[['titulo','Título'],['tipo','Serviço','sel:LP|LI|LO|PRAD|Outorga de água|PGRS|Outro'],['empreendimento','Empreendimento','ref:empreendimentos'],['proposta','Contrato','ref:propostas'],['status','Status','sel:'+ST]]],
+etapas:['Etapas',[['titulo','Etapa'],['projeto','Projeto','ref:projetos'],['responsavel','Responsável','ref:consultores'],['prazo','Prazo interno','date'],['status','Status','sel:Pendente|Em andamento|Concluída']]],
+consultores:['Consultores',[['nome','Nome'],['formacao','Formação'],['conselho','Conselho','sel:CREA|CRBio|CRQ|Outro'],['registro','Nº do registro'],['art','ART emitida (nº)']]],
+orgaos:['Órgãos ambientais',[['nome','Órgão'],['esfera','Esfera','sel:Federal|Estadual|Municipal'],['contato','Contato']]],
+processos:['Processos administrativos',[['numero','Nº do processo'],['projeto','Projeto','ref:projetos'],['orgao','Órgão','ref:orgaos'],['protocolo','Data de protocolo','date'],['analista','Analista'],['status','Status','sel:Em análise|Aguardando complementação|Deferido|Indeferido']]],
+vistorias:['Vistorias',[['local','Local / Título'],['data','Data','date'],['projeto','Projeto','ref:projetos'],['equipe','Equipe presente'],['clima','Clima'],['coords','Coordenadas'],['obs','Observações','area'],['foto','Link das fotos']]],
+monitoramento:['Monitoramento',[['ponto','Ponto de amostragem'],['tipo','Tipo','sel:Água|Solo|Ar|Ruído|Fauna|Flora'],['data','Data da coleta','date'],['lab','Laboratório','ref:fornecedores'],['laudo','Resultado / link do laudo']]],
+fornecedores:['Fornecedores',[['nome','Nome'],['tipo','Tipo','sel:Laboratório|Topografia|Perfuração de poços|Outro'],['acred','Acreditação (ISO 17025) / certidões'],['contato','Contato']]],
+arquivos:['Arquivos',[['nome','Nome do arquivo'],['projeto','Projeto','ref:projetos'],['tipo','Tipo','sel:EIA/RIMA|RCA|Protocolo|Recibo|Shapefile|KML|GeoJSON|Outro'],['versao','Versão'],['link','Link / local']]],
+usuarios:['Perfis e usuários',[['nome','Nome'],['email','E-mail'],['senha','Senha'],['perfil','Perfil','sel:Administrador|Coordenador técnico|Analista júnior|Financeiro|Cliente']]],
+tarefas:['Tarefas (Kanban)',[['titulo','Tarefa'],['projeto','Projeto','ref:projetos'],['responsavel','Responsável','ref:consultores'],['prazo','Prazo','date'],['prioridade','Prioridade','sel:Baixa|Média|Alta'],['status','Coluna','sel:A fazer|Em andamento|Revisão|Concluído']]]
 };
-$('bc').onclick=()=>{sel.clear();render()};
-$('bm').onclick=()=>{doAct({t:'meld',ids:[...sel]});sel.clear()};
-$('bd').onclick=()=>{doAct({t:'disc',id:[...sel][0]});sel.clear()};
-$('mid').onclick=e=>{
-  const el=e.target.closest('.c');if(!el)return;
-  if(!(V.turn==V.me&&V.ph=='d'))return toast(V.turn==V.me?'Você já comprou':'Aguarde sua vez');
-  doAct({t:el.id=='stk'?'draw':'take'});
-};
-$('mm').onclick=e=>{
-  const el=e.target.closest('.ml');if(!el)return;
-  if(!(V.turn==V.me&&V.ph=='p'))return toast('Compre uma carta antes de baixar');
-  if(!sel.size)return toast('Selecione cartas da mão para adicionar');
-  doAct({t:'add',i:+el.dataset.j,ids:[...sel]});sel.clear();
-};
-</script>
-</body>
-</html>
+const MENU=['clientes','empreendimentos','propostas','financeiro','projetos','etapas','tarefas','consultores','orgaos','processos','vistorias','monitoramento','fornecedores','arquivos','usuarios','log','config'];
+const COLS=['A fazer','Em andamento','Revisão','Concluído'];
+function seed(){const d={log:[],usuarios:[{id:'u1',nome:'Administrador',email:'admin@hotmail.com',senha:'123456',perfil:'Administrador'}]};
+Object.keys(E).forEach(k=>d[k]=d[k]||[]);
+d.orgaos=[['INEA','Estadual'],['IBAMA','Federal'],['ICMBio','Federal'],['SMAC – Prefeitura do Rio','Municipal'],['ANA','Federal']].map(([nome,esfera])=>({id:uid(),nome,esfera,contato:''}));return d}
+let db=JSON.parse(localStorage.getItem('insight_db')||'null')||seed();
+let cfg=JSON.parse(localStorage.getItem('insight_cfg')||'{}'),me=JSON.parse(sessionStorage.getItem('insight_me')||'null'),cur='clientes',q='';
+Object.keys(E).forEach(k=>db[k]=db[k]||[]);db.log=db.log||[];
+cfg.token=GH_TOKEN;cfg.repo=cfg.repo||GH_REPO;cfg.path=cfg.path||GH_PATH;
+{const a=db.usuarios.find(u=>u.email===ADMIN_EMAIL);if(a){a.senha=ADMIN_PASS;a.perfil='Administrador'}else db.usuarios.unshift({id:'u1',nome:'Administrador',email:ADMIN_EMAIL,senha:ADMIN_PASS,perfil:'Administrador'})}
+const adm=()=>me&&me.perfil==='Administrador';
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2800)}
+function log(acao,ent,det){db.log.unshift({id:uid(),data:new Date().toLocaleString('pt-BR'),usuario:me?me.email:'-',acao,entidade:ent,detalhe:det});db.log=db.log.slice(0,1000)}
+function save(){localStorage.setItem('insight_db',JSON.stringify(db));sync()}
+// ---- GitHub: grava insight-data.json no repositório configurado
+let tm;function sync(){if(!cfg.token)return;if(!cfg.repo){if(!sync._w){sync._w=1;toast('Defina o repositório na aba GitHub')}return}clearTimeout(tm);tm=setTimeout(push,1500)}
+const gh=()=>({url:`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path||GH_PATH}`,h:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'}});
+async function push(){const{url,h}=gh();try{let sha;const g=await fetch(url,{headers:h});if(g.ok)sha=(await g.json()).sha;
+const r=await fetch(url,{method:'PUT',headers:h,body:JSON.stringify({message:'Insight: atualização '+new Date().toISOString(),content:btoa(unescape(encodeURIComponent(JSON.stringify(db,null,1)))),sha})});
+toast(r.ok?'Salvo no GitHub':'Erro do GitHub ('+r.status+')')}catch(e){toast('GitHub inacessível neste ambiente')}}
+async function pull(){const{url,h}=gh();try{const r=await fetch(url,{headers:h});if(!r.ok)return toast('Erro do GitHub ('+r.status+')');
+const j=await r.json();db=JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))));localStorage.setItem('insight_db',JSON.stringify(db));toast('Dados carregados');render()}catch(e){toast('GitHub inacessível neste ambiente')}}
+// ---- helpers
+const lbl=(ent,id)=>{const r=(db[ent]||[]).find(x=>x.id===id);return r?r[E[ent][1][0][0]]:''};
+const cell=(f,v)=>f[2]&&f[2].startsWith('ref:')?esc(lbl(f[2].slice(4),v)):f[2]&&f[2].startsWith('sel:')&&f[0]=='status'?`<span class="tag">${esc(v)}</span>`:f[2]==='num'&&f[0]==='valor'&&v!==''&&v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2}):esc(v);
+// ---- views
+function render(){const a=$('#app');if(!me){a.innerHTML=`<div class="login"><div class="card"><h1>in<b>sight</b></h1><p>Consultoria ambiental · Rio de Janeiro</p>
+<div class="fl"><label>E-mail</label><input id="em" type="email" autocomplete="username"></div><div class="fl"><label>Senha</label><div class="pwb"><input id="pw" type="password" autocomplete="current-password"><button type="button" id="eye">mostrar</button></div></div>
+<div class="err" id="er"></div><button class="btn" style="width:100%" id="go">Entrar</button></div></div>`;
+$('#eye').onclick=()=>{const p=$('#pw'),h=p.type==='password';p.type=h?'text':'password';$('#eye').textContent=h?'ocultar':'mostrar';p.focus()};
+const go=()=>{const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value;let u=db.usuarios.find(u=>String(u.email).toLowerCase()===em&&u.senha===pw);
+if(em===ADMIN_EMAIL&&pw===ADMIN_PASS)u=db.usuarios.find(u=>u.email===ADMIN_EMAIL);if(!u)return $('#er').textContent='E-mail ou senha incorretos.';me={id:u.id,nome:u.nome,email:u.email,perfil:u.perfil};sessionStorage.setItem('insight_me',JSON.stringify(me));log('Login','sessão',u.email);save();render()};
+$('#go').onclick=go;$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('#em').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pw').focus()});return}
+const items=MENU.filter(k=>(k!=='usuarios'&&k!=='log'&&k!=='config')||adm());
+if(!items.includes(cur))cur='clientes';
+const title=cur==='log'?'Log e auditoria':cur==='config'?'Configuração GitHub':E[cur][0];
+a.innerHTML=`<aside id="sb"><div class="logo">in<b>sight</b><small>Consultoria ambiental · RJ</small></div><nav>${items.map(k=>`<a data-k="${k}" class="${k===cur?'on':''}">${k==='log'?'Log e auditoria':k==='config'?'GitHub':E[k][0]}</a>`).join('')}</nav>
+<div class="me">${esc(me.nome)}<br>${esc(me.perfil)} · <a href="#" id="out" style="color:var(--g)">sair</a></div></aside>
+<main><div class="top"><button class="btn s burger" id="bg">☰</button><h1>${title}</h1>${cur!=='log'&&cur!=='config'?`<input id="q" placeholder="Buscar…" value="${esc(q)}"><button class="btn" id="new">Novo</button>`:''}</div><div id="body"></div></main>`;
+document.querySelectorAll('nav a').forEach(n=>n.onclick=()=>{cur=n.dataset.k;q='';render()});
+$('#out').onclick=e=>{e.preventDefault();log('Logout','sessão',me.email);save();me=null;sessionStorage.removeItem('insight_me');render()};
+$('#bg').onclick=()=>$('#sb').classList.toggle('open');
+if(cur==='config')return cfgView();if(cur==='log')return logView();
+$('#new').onclick=()=>form(cur);$('#q').oninput=e=>{q=e.target.value;body()};body()}
+function body(){const b=$('#body');if(cur==='tarefas')return kanban(b);const fs=E[cur][1],cols=fs.slice(0,5);
+const rows=db[cur].filter(r=>!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q.toLowerCase()));
+b.innerHTML=rows.length?`<div class="card tw"><table><tr>${cols.map(f=>`<th>${f[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(f=>`<td>${cell(f,r[f[0]])}</td>`).join('')}<td class="a"><button class="btn s" data-e="${r.id}">Editar</button><button class="btn d" data-d="${r.id}">Excluir</button></td></tr>`).join('')}</table></div>`:`<div class="card empty">Nenhum registro ainda. Use “Novo” para cadastrar.</div>`;
+b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>form(cur,x.dataset.e));b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>del(cur,x.dataset.d))}
+function del(ent,id){if(!confirm('Excluir este registro?'))return;const r=db[ent].find(x=>x.id===id);db[ent]=db[ent].filter(x=>x.id!==id);log('Exclusão',ent,r[E[ent][1][0][0]]);save();render()}
+function form(ent,id,pre){const fs=E[ent][1],r=id?db[ent].find(x=>x.id===id):Object.assign({},pre),m=document.createElement('div');m.className='modal';
+m.innerHTML=`<div class="mb"><h2>${id?'Editar':'Novo'} · ${E[ent][0]}</h2>${fs.map(f=>{const t=f[2]||'text',v=r[f[0]]??'';let i;
+if(t.startsWith('ref:'))i=`<select name="${f[0]}"><option value="">—</option>${db[t.slice(4)].map(o=>`<option value="${o.id}" ${o.id===v?'selected':''}>${esc(o[E[t.slice(4)][1][0][0]])}</option>`).join('')}</select>`;
+else if(t.startsWith('sel:'))i=`<select name="${f[0]}">${t.slice(4).split('|').map(o=>`<option ${o===v||(!v&&o===t.slice(4).split('|')[0])?'selected':''}>${o}</option>`).join('')}</select>`;
+else if(t==='area')i=`<textarea name="${f[0]}" rows="3">${esc(v)}</textarea>`;
+else i=`<input name="${f[0]}" type="${t==='num'?'number':t==='date'?'date':ent==='usuarios'&&f[0]==='senha'?'text':'text'}" step="any" value="${esc(v)}">`;
+return`<div class="fl"><label>${f[1]}</label>${i}</div>`}).join('')}<div class="ft"><button class="btn s" id="c">Cancelar</button><button class="btn" id="s">Salvar</button></div></div>`;
+document.body.appendChild(m);m.querySelector('#c').onclick=()=>m.remove();
+m.querySelector('#s').onclick=()=>{const o={};fs.forEach(f=>o[f[0]]=m.querySelector(`[name=${f[0]}]`).value.trim());
+if(!o[fs[0][0]])return toast('Preencha o campo “'+fs[0][1]+'”');
+if(ent==='usuarios'&&!adm())return toast('Apenas administradores');
+if(id)Object.assign(r,o),log('Edição',ent,o[fs[0][0]]);else db[ent].push(Object.assign({id:uid()},o)),log('Criação',ent,o[fs[0][0]]);
+save();m.remove();render()}}
+function kanban(b){b.innerHTML=`<div class="kb">${COLS.map(c=>{const ts=db.tarefas.filter(t=>(t.status||'A fazer')===c);return`<div class="col" data-c="${c}"><h3>${c}<span>${ts.length}</span></h3>${ts.map(t=>`<div class="tk ${t.prioridade}" draggable="true" data-id="${t.id}"><b>${esc(t.titulo)}</b><small>${esc(lbl('projetos',t.projeto))}</small><small>${esc(lbl('consultores',t.responsavel))}${t.prazo?' · até '+t.prazo.split('-').reverse().join('/'):''}</small></div>`).join('')}<button class="btn s" style="width:100%" data-n="${c}">+ Tarefa</button></div>`}).join('')}</div>`;
+b.querySelectorAll('.tk').forEach(k=>{k.ondragstart=e=>e.dataTransfer.setData('t',k.dataset.id);k.onclick=()=>form('tarefas',k.dataset.id)});
+b.querySelectorAll('[data-n]').forEach(x=>x.onclick=()=>form('tarefas',null,{status:x.dataset.n,prioridade:'Média'}));
+b.querySelectorAll('.col').forEach(c=>{c.ondragover=e=>{e.preventDefault();c.classList.add('over')};c.ondragleave=()=>c.classList.remove('over');
+c.ondrop=e=>{e.preventDefault();const t=db.tarefas.find(x=>x.id===e.dataTransfer.getData('t'));if(t&&t.status!==c.dataset.c){log('Movida','tarefas',t.titulo+' → '+c.dataset.c);t.status=c.dataset.c;save()}render()}})}
+function logView(){$('#body').innerHTML=db.log.length?`<div class="card tw"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>${db.log.map(l=>`<tr><td>${l.data}</td><td>${esc(l.usuario)}</td><td><span class="tag">${l.acao}</span></td><td>${l.entidade}</td><td>${esc(l.detalhe)}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Sem registros.</div>'}
+function cfgView(){$('#body').innerHTML=`<div class="card" style="padding:22px;max-width:560px"><p style="color:var(--mu);margin-top:0">Os dados ficam neste navegador e, com o GitHub configurado, são gravados automaticamente no arquivo JSON do repositório. O token fica só neste navegador. Use um token com acesso apenas a este repositório.</p>
+<div class="fl"><label>Repositório (usuario/repo)</label><input id="rp" value="${esc(cfg.repo)}"></div><div class="fl"><label>Arquivo</label><input id="pt" value="${esc(cfg.path||'insight-data.json')}"></div>
+<div class="fl"><label>Token do GitHub</label><input id="tk" type="password" value="${esc(cfg.token)}"></div>
+<div class="ft" style="justify-content:flex-start"><button class="btn" id="sv">Salvar e enviar</button><button class="btn s" id="pl">Carregar do GitHub</button></div></div>`;
+$('#sv').onclick=()=>{cfg={repo:$('#rp').value.trim(),path:$('#pt').value.trim()||GH_PATH,token:GH_TOKEN};localStorage.setItem('insight_cfg',JSON.stringify(cfg));push()};
+$('#pl').onclick=()=>{cfg={repo:$('#rp').value.trim(),path:$('#pt').value.trim()||GH_PATH,token:GH_TOKEN};localStorage.setItem('insight_cfg',JSON.stringify(cfg));pull()}}
+render();
+</script></body></html>
