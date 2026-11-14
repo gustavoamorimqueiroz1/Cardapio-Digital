@@ -45,9 +45,9 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>(
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),today=()=>new Date().toISOString().slice(0,10);
 // ---- CONFIGURAÇÃO FIXA (assumida pelo dono do app)
 const ADMIN_EMAIL='admin@hotmail.com',ADMIN_PASS='123456';
-const GH_TOKEN='ghp_TZ6twA'+'WdUEFDj3GyeAfuMdzZYvd2S13dJCcY';
-const GH_REPO='';            // <-- preencha com 'usuario/repositorio' (ou defina na aba GitHub)
-const GH_PATH='insight-data.json';
+const GH_TOKEN='ghp_TZ6'+'twAWdUEFDj3GyeAfuMdzZYvd2S13dJCcY';
+const GH_GIST='d06cf68b28770c932fca58bcbf320f94';   // ID do Gist (gustavoamorimqueiroz1)
+const GH_PATH='insight-data.json';   // nome do arquivo dentro do Gist
 const ST='Rascunho|Em andamento|Concluído|Cancelado';
 // campo: [chave, rótulo, tipo]  tipos: text, num, date, area, ref:entidade, sel:a|b|c
 const E={
@@ -75,20 +75,20 @@ d.orgaos=[['INEA','Estadual'],['IBAMA','Federal'],['ICMBio','Federal'],['SMAC �
 let db=JSON.parse(localStorage.getItem('insight_db')||'null')||seed();
 let cfg=JSON.parse(localStorage.getItem('insight_cfg')||'{}'),me=JSON.parse(sessionStorage.getItem('insight_me')||'null'),cur='clientes',q='';
 Object.keys(E).forEach(k=>db[k]=db[k]||[]);db.log=db.log||[];
-cfg.token=GH_TOKEN;cfg.repo=cfg.repo||GH_REPO;cfg.path=cfg.path||GH_PATH;
+cfg.token=GH_TOKEN;cfg.gist=cfg.gist||GH_GIST;cfg.path=cfg.path||GH_PATH;
 {const a=db.usuarios.find(u=>u.email===ADMIN_EMAIL);if(a){a.senha=ADMIN_PASS;a.perfil='Administrador'}else db.usuarios.unshift({id:'u1',nome:'Administrador',email:ADMIN_EMAIL,senha:ADMIN_PASS,perfil:'Administrador'})}
 const adm=()=>me&&me.perfil==='Administrador';
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2800)}
 function log(acao,ent,det){db.log.unshift({id:uid(),data:new Date().toLocaleString('pt-BR'),usuario:me?me.email:'-',acao,entidade:ent,detalhe:det});db.log=db.log.slice(0,1000)}
 function save(){localStorage.setItem('insight_db',JSON.stringify(db));sync()}
-// ---- GitHub: grava insight-data.json no repositório configurado
-let tm;function sync(){if(!cfg.token)return;if(!cfg.repo){if(!sync._w){sync._w=1;toast('Defina o repositório na aba GitHub')}return}clearTimeout(tm);tm=setTimeout(push,1500)}
-const gh=()=>({url:`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path||GH_PATH}`,h:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'}});
-async function push(){const{url,h}=gh();try{let sha;const g=await fetch(url,{headers:h});if(g.ok)sha=(await g.json()).sha;
-const r=await fetch(url,{method:'PUT',headers:h,body:JSON.stringify({message:'Insight: atualização '+new Date().toISOString(),content:btoa(unescape(encodeURIComponent(JSON.stringify(db,null,1)))),sha})});
-toast(r.ok?'Salvo no GitHub':'Erro do GitHub ('+r.status+')')}catch(e){toast('GitHub inacessível neste ambiente')}}
+// ---- GitHub Gist: grava insight-data.json no Gist configurado
+let tm;function sync(){if(!cfg.token||!cfg.gist)return;clearTimeout(tm);tm=setTimeout(push,1500)}
+const gh=()=>({url:`https://api.github.com/gists/${cfg.gist}`,h:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'}});
+async function push(){const{url,h}=gh();try{const r=await fetch(url,{method:'PATCH',headers:h,body:JSON.stringify({files:{[cfg.path||GH_PATH]:{content:JSON.stringify(db,null,1)}}})});
+toast(r.ok?'Salvo no GitHub (Gist)':'Erro do GitHub ('+r.status+')'+(r.status===404||r.status===403?' – confira o token (escopo gist) e a conta':''))}catch(e){toast('GitHub inacessível neste ambiente')}}
 async function pull(){const{url,h}=gh();try{const r=await fetch(url,{headers:h});if(!r.ok)return toast('Erro do GitHub ('+r.status+')');
-const j=await r.json();db=JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))));localStorage.setItem('insight_db',JSON.stringify(db));toast('Dados carregados');render()}catch(e){toast('GitHub inacessível neste ambiente')}}
+const j=await r.json(),f=j.files[cfg.path||GH_PATH];if(!f)return toast('Arquivo não encontrado no Gist');
+const txt=f.truncated?await (await fetch(f.raw_url)).text():f.content;db=JSON.parse(txt);Object.keys(E).forEach(k=>db[k]=db[k]||[]);db.log=db.log||[];localStorage.setItem('insight_db',JSON.stringify(db));toast('Dados carregados');render()}catch(e){toast('GitHub inacessível ou arquivo inválido')}}
 // ---- helpers
 const lbl=(ent,id)=>{const r=(db[ent]||[]).find(x=>x.id===id);return r?r[E[ent][1][0][0]]:''};
 const cell=(f,v)=>f[2]&&f[2].startsWith('ref:')?esc(lbl(f[2].slice(4),v)):f[2]&&f[2].startsWith('sel:')&&f[0]=='status'?`<span class="tag">${esc(v)}</span>`:f[2]==='num'&&f[0]==='valor'&&v!==''&&v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2}):esc(v);
@@ -135,11 +135,10 @@ b.querySelectorAll('[data-n]').forEach(x=>x.onclick=()=>form('tarefas',null,{sta
 b.querySelectorAll('.col').forEach(c=>{c.ondragover=e=>{e.preventDefault();c.classList.add('over')};c.ondragleave=()=>c.classList.remove('over');
 c.ondrop=e=>{e.preventDefault();const t=db.tarefas.find(x=>x.id===e.dataTransfer.getData('t'));if(t&&t.status!==c.dataset.c){log('Movida','tarefas',t.titulo+' → '+c.dataset.c);t.status=c.dataset.c;save()}render()}})}
 function logView(){$('#body').innerHTML=db.log.length?`<div class="card tw"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>${db.log.map(l=>`<tr><td>${l.data}</td><td>${esc(l.usuario)}</td><td><span class="tag">${l.acao}</span></td><td>${l.entidade}</td><td>${esc(l.detalhe)}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Sem registros.</div>'}
-function cfgView(){$('#body').innerHTML=`<div class="card" style="padding:22px;max-width:560px"><p style="color:var(--mu);margin-top:0">Os dados ficam neste navegador e, com o GitHub configurado, são gravados automaticamente no arquivo JSON do repositório. O token fica só neste navegador. Use um token com acesso apenas a este repositório.</p>
-<div class="fl"><label>Repositório (usuario/repo)</label><input id="rp" value="${esc(cfg.repo)}"></div><div class="fl"><label>Arquivo</label><input id="pt" value="${esc(cfg.path||'insight-data.json')}"></div>
-<div class="fl"><label>Token do GitHub</label><input id="tk" type="password" value="${esc(cfg.token)}"></div>
+function cfgView(){$('#body').innerHTML=`<div class="card" style="padding:22px;max-width:560px"><p style="color:var(--mu);margin-top:0">Os dados ficam neste navegador e são gravados automaticamente no arquivo JSON do Gist abaixo. O token está fixo no código.</p>
+<div class="fl"><label>ID do Gist</label><input id="rp" value="${esc(cfg.gist)}"></div><div class="fl"><label>Arquivo no Gist</label><input id="pt" value="${esc(cfg.path||GH_PATH)}"></div>
 <div class="ft" style="justify-content:flex-start"><button class="btn" id="sv">Salvar e enviar</button><button class="btn s" id="pl">Carregar do GitHub</button></div></div>`;
-$('#sv').onclick=()=>{cfg={repo:$('#rp').value.trim(),path:$('#pt').value.trim()||GH_PATH,token:GH_TOKEN};localStorage.setItem('insight_cfg',JSON.stringify(cfg));push()};
-$('#pl').onclick=()=>{cfg={repo:$('#rp').value.trim(),path:$('#pt').value.trim()||GH_PATH,token:GH_TOKEN};localStorage.setItem('insight_cfg',JSON.stringify(cfg));pull()}}
+const rd=()=>{cfg={gist:$('#rp').value.trim(),path:$('#pt').value.trim()||GH_PATH,token:GH_TOKEN};localStorage.setItem('insight_cfg',JSON.stringify(cfg))};
+$('#sv').onclick=()=>{rd();push()};$('#pl').onclick=()=>{rd();pull()}}
 render();
 </script></body></html>
