@@ -48,14 +48,12 @@ input:-webkit-autofill{-webkit-text-fill-color:var(--tx);box-shadow:0 0 0 100px 
 .pw{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.pw ul{list-style:none;margin:0;padding:0;font-size:13px}.pw li{margin:4px 0}.pw i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px}
 .cr{display:flex;gap:6px;margin-bottom:6px}.cr input,.cr select{min-width:0}.mu{color:var(--mu)}
 </style></head><body><div id="app"></div><div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),today=()=>new Date().toISOString().slice(0,10);
-// ---- CONFIGURAÇÃO FIXA (assumida pelo dono do app)
-const ADMIN_EMAIL='admin@hotmail.com',ADMIN_PASS='123456';
-const GH_TOKEN='ghp_TZ6'+'twAWdUEFDj3GyeAfuMdzZYvd2S13dJCcY';
-const GH_GIST='d06cf68b28770c932fca58bcbf320f94';   // ID do Gist (gustavoamorimqueiroz1)
-const GH_PATH='insight-data.json';   // nome do arquivo dentro do Gist
 const ST='Rascunho|Em andamento|Concluído|Cancelado';
 // campo: [chave, rótulo, tipo]  tipos: text, num, date, area, ref:entidade, sel:a|b|c
 const E={
@@ -72,84 +70,85 @@ vistorias:['Vistorias',[['local','Local / Título'],['data','Data','date'],['pro
 monitoramento:['Monitoramento',[['ponto','Ponto de amostragem'],['tipo','Tipo','sel:Água|Solo|Ar|Ruído|Fauna|Flora'],['data','Data da coleta','date'],['lab','Laboratório','ref:fornecedores'],['laudo','Resultado / link do laudo']]],
 fornecedores:['Fornecedores',[['nome','Nome'],['tipo','Tipo','sel:Laboratório|Topografia|Perfuração de poços|Outro'],['acred','Acreditação (ISO 17025) / certidões'],['contato','Contato']]],
 arquivos:['Arquivos',[['nome','Nome do arquivo'],['projeto','Projeto','ref:projetos'],['tipo','Tipo','sel:EIA/RIMA|RCA|Protocolo|Recibo|Shapefile|KML|GeoJSON|Outro'],['versao','Versão'],['link','Link / local']]],
-usuarios:['Perfis e usuários',[['nome','Nome'],['email','E-mail'],['senha','Senha'],['perfil','Perfil','sel:Administrador|Coordenador técnico|Analista júnior|Financeiro|Cliente']]],
+usuarios:['Perfis e usuários',[['nome','Nome'],['email','E-mail'],['perfil','Perfil']]],
 tarefas:['Tarefas (Kanban)',[['titulo','Tarefa'],['projeto','Projeto','ref:projetos'],['responsavel','Responsável','ref:consultores'],['prazo','Prazo','date'],['prioridade','Prioridade','sel:Baixa|Média|Alta'],['status','Coluna','sel:A fazer|Em andamento|Revisão|Concluído']]],
 tabelas:['Tabelas dinâmicas',[['nome','Nome']]],boards:['Boards',[['nome','Nome']]]
 };
 const MENU=['clientes','empreendimentos','propostas','financeiro','projetos','etapas','indicadores','tarefas','consultores','orgaos','processos','vistorias','monitoramento','fornecedores','arquivos','tabelas','usuarios','log'];
 const COLS=['A fazer','Em andamento','Revisão','Concluído'];
-function seed(){const d={log:[],usuarios:[{id:'u1',nome:'Administrador',email:'admin@hotmail.com',senha:'123456',perfil:'Administrador'}]};
-Object.keys(E).forEach(k=>d[k]=d[k]||[]);
-d.orgaos=[['INEA','Estadual'],['IBAMA','Federal'],['ICMBio','Federal'],['SMAC – Prefeitura do Rio','Municipal'],['ANA','Federal']].map(([nome,esfera])=>({id:uid(),nome,esfera,contato:''}));return d}
-let db=JSON.parse(localStorage.getItem('insight_db')||'null')||seed();
-let cfg=JSON.parse(localStorage.getItem('insight_cfg')||'{}'),me=JSON.parse(sessionStorage.getItem('insight_me')||'null'),cur='clientes',q='';
-Object.keys(E).forEach(k=>db[k]=db[k]||[]);db.log=db.log||[];
-loadDyn(db);Object.keys(E).forEach(k=>db[k]=db[k]||[]);ensureBoards();cfg.token=GH_TOKEN;cfg.gist=cfg.gist||GH_GIST;cfg.path=cfg.path||GH_PATH;
-{const a=db.usuarios.find(u=>u.email===ADMIN_EMAIL);if(a){a.senha=ADMIN_PASS;a.perfil='Administrador'}else db.usuarios.unshift({id:'u1',nome:'Administrador',email:ADMIN_EMAIL,senha:ADMIN_PASS,perfil:'Administrador'})}
-const adm=()=>me&&me.perfil==='Administrador';
+/* ---- Firebase: login por Authentication; dados em Realtime Database em empresas/{empresa}/{tabela}/{id} */
+const firebaseConfig={apiKey:"AIzaSyBSG5VhSKUbHJ0UMkuBQPDJQhucdgY_ipQ",authDomain:"insight-5189f.firebaseapp.com",databaseURL:"https://insight-5189f-default-rtdb.firebaseio.com",projectId:"insight-5189f",storageBucket:"insight-5189f.firebasestorage.app",messagingSenderId:"858268463882",appId:"1:858268463882:web:5f2b2dd9f0a680a10600f3"};
+firebase.initializeApp(firebaseConfig);
+const fb={auth:firebase.auth(),db:firebase.database()};
+const PERFIS={admin:'Administrador',coordenador:'Coordenador técnico',analista:'Analista júnior',financeiro:'Financeiro',cliente:'Cliente'};
+const SESSAO_MIN=60,TS='amb_login_ts',TB=Object.keys(E).filter(k=>!k.startsWith('t_'));
+let db={},me=null,cur='clientes',q='',EMP='',DADOS={},LS=[],tmr,pend;
+Object.keys(E).forEach(k=>db[k]=[]);db.log=[];
+const adm=()=>me&&me.perfil==='admin';
+const R=p=>fb.db.ref('empresas/'+EMP+'/'+p);
+const limpo=v=>JSON.parse(JSON.stringify(v===undefined?null:v));
+const arr=o=>o?Object.entries(o).filter(([,v])=>v&&typeof v==='object').map(([id,v])=>({...v,id})):[];
+const P=ent=>ent.startsWith('t_')?'dados/'+ent.slice(2):ent;
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2800)}
-function log(acao,ent,det){db.log.unshift({id:uid(),data:new Date().toLocaleString('pt-BR'),usuario:me?me.email:'-',acao,entidade:ent,detalhe:det});db.log=db.log.slice(0,1000)}
-function save(){stamp();localStorage.setItem('insight_db',JSON.stringify(db));localStorage.setItem('insight_dirty','1');sync()}
-// ---- GitHub Gist: o Gist é a fonte da verdade; cada aparelho busca a versão mais recente (sem cache) e mescla antes de gravar
-const strip=(k,v)=>k==='_u'?undefined:v;
-let snap={};
-function mkSnap(){snap={};Object.keys(E).forEach(k=>{snap[k]={};db[k].forEach(r=>snap[k][r.id]=JSON.stringify(r,strip))})}
-function stamp(){const n=Date.now();db._del=db._del||{};Object.keys(E).forEach(k=>{const cur={};db[k].forEach(r=>{cur[r.id]=1;if((snap[k]||{})[r.id]!==JSON.stringify(r,strip))r._u=n});Object.keys(snap[k]||{}).forEach(id=>{if(!cur[id])db._del[id]=n})});mkSnap()}
-function mergeDB(R){const L=db,del=Object.assign({},R._del);Object.entries(L._del||{}).forEach(([id,t])=>{del[id]=Math.max(t,del[id]||0)});const out={_del:del};
-Object.keys(E).forEach(k=>{const m=new Map();(R[k]||[]).forEach(r=>m.set(r.id,r));(L[k]||[]).forEach(r=>{const o=m.get(r.id);if(!o||(r._u||0)>=(o._u||0))m.set(r.id,r)});
-let a=[...m.values()].filter(r=>!(del[r.id]&&del[r.id]>=(r._u||0)));
-if(k==='orgaos'){const sn=new Set();a=a.filter(r=>{const n=String(r.nome).toLowerCase();if(sn.has(n))return false;sn.add(n);return true})}out[k]=a});
-const lm=new Map();[...(R.log||[]),...(L.log||[])].forEach(l=>lm.set(l.id,l));out.log=[...lm.values()].sort((x,y)=>String(y.id).localeCompare(String(x.id))).slice(0,1000);return out}
-const gh=()=>({url:`https://api.github.com/gists/${cfg.gist}`,h:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'}});
-async function fetchRemote(){const{url,h}=gh();const r=await fetch(url+'?_='+Date.now(),{headers:h,cache:'no-store'});if(!r.ok){const e=new Error('http');e.status=r.status;throw e}
-const j=await r.json(),f=j.files&&j.files[cfg.path||GH_PATH];if(!f)return null;const txt=f.truncated?await(await fetch(f.raw_url+'?_='+Date.now(),{cache:'no-store'})).text():f.content;return txt&&txt.trim()?JSON.parse(txt):null}
-let tm,busy=false;
-function sync(){if(!cfg.token||!cfg.gist)return;clearTimeout(tm);tm=setTimeout(()=>syncNow(false),1500)}
-async function syncNow(manual){if(!cfg.token||!cfg.gist)return;
-if(document.querySelector('.modal')){if(manual||localStorage.getItem('insight_dirty')){clearTimeout(tm);tm=setTimeout(()=>syncNow(manual),2000)}return}
-if(busy){if(manual||localStorage.getItem('insight_dirty')){clearTimeout(tm);tm=setTimeout(()=>syncNow(manual),1000)}return}
-busy=true;try{const before=JSON.stringify(db,strip);const R=await fetchRemote();
-if(R){loadDyn(R);db=mergeDB(R);loadDyn(db);Object.keys(E).forEach(k=>db[k]=db[k]||[]);db.log=db.log||[];ensureBoards();mkSnap();localStorage.setItem('insight_db',JSON.stringify(db))}
-let pushed=false;
-if(localStorage.getItem('insight_dirty')||!R){const{url,h}=gh();const r=await fetch(url,{method:'PATCH',headers:h,body:JSON.stringify({files:{[cfg.path||GH_PATH]:{content:JSON.stringify(db,null,1)}}})});
-if(!r.ok){const e=new Error('http');e.status=r.status;throw e}localStorage.removeItem('insight_dirty');pushed=true}
-const changed=before!==JSON.stringify(db,strip);
-if(changed&&me&&!document.querySelector('.modal'))render();
-if(pushed)toast('Salvo no GitHub (Gist)');else if(changed)toast('Dados atualizados de outro dispositivo');else if(manual)toast('Já está na versão mais recente')}
-catch(e){if(manual||localStorage.getItem('insight_dirty'))toast(e.status?'Erro do GitHub ('+e.status+')'+(e.status===404||e.status===403?' – confira o token (escopo gist) e a conta':''):'GitHub inacessível ou arquivo inválido')}
-finally{busy=false}}
-// atualiza ao abrir, ao voltar para a aba/app, ao reconectar e a cada 20 s
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncNow(false)});
-window.addEventListener('focus',()=>syncNow(false));window.addEventListener('online',()=>syncNow(false));
-setInterval(()=>{if(!document.hidden)syncNow(false)},20000);
+const fail=e=>toast(/permission/i.test((e&&(e.code||e.message))||'')?'Sem permissão para esta ação.':'Erro ao salvar. Verifique a conexão.');
+const put=(ent,r)=>R(P(ent)+'/'+r.id).set(limpo(r)).catch(fail);
+const rem=(ent,id)=>R(P(ent)+'/'+id).remove().catch(fail);
+const log=(acao,ent,det)=>me?R('log').push({data:new Date().toLocaleString('pt-BR'),ts:Date.now(),usuario:me.email,acao,entidade:ent,detalhe:String(det??'')}).catch(()=>{}):Promise.resolve();
+function erroAuth(e){const c=(e&&e.code)||'';if(['auth/invalid-credential','auth/user-not-found','auth/wrong-password','auth/invalid-email'].includes(c))return'E-mail ou senha incorretos.';if(c==='auth/user-disabled')return'Usuário inativo. Fale com o administrador.';if(c==='auth/too-many-requests')return'Muitas tentativas. Aguarde alguns minutos.';if(c==='auth/network-request-failed')return'Sem conexão. Verifique sua internet.';return'Erro ao realizar o login. Tente novamente.'}
+async function montar(u){const p=(await fb.db.ref('perfis/'+u.uid).get()).val();
+if(!p||p.perfil==='superadmin')return{erro:p?'E-mail ou senha incorretos.':'Usuário sem empresa vinculada. Fale com o administrador.'};
+if(!p.empresa)return{erro:'Usuário sem empresa vinculada. Fale com o administrador.'};
+if(p.ativo!==true)return{erro:'Usuário inativo. Fale com o administrador.'};
+EMP=String(p.empresa).trim().toLowerCase();return{user:{uid:u.uid,email:p.email||u.email,nome:p.nome||u.email,empresa:EMP,perfil:p.perfil||'cliente'}}}
+async function sair(){LS.forEach(r=>r.off());LS=[];clearInterval(tmr);try{await fb.auth.signOut()}catch(e){}localStorage.removeItem(TS);me=null;EMP='';DADOS={};Object.keys(E).forEach(k=>db[k]=[]);db.log=[]}
+function listen(){return new Promise((ok,no)=>{let n=0,bad=false;const tot=TB.length+1+(adm()?1:0);
+const on=(ref,fn)=>{let f=0;LS.push(ref);ref.on('value',s=>{fn(s.val());if(!f){f=1;if(++n===tot)ok()}else refresh()},e=>{if(!bad){bad=true;no(e)}})};
+TB.forEach(k=>on(R(k),v=>{db[k]=arr(v);if(k==='tabelas')loadDyn()}));
+on(R('dados'),v=>{DADOS=v||{};loadDyn()});
+if(adm())on(R('log').limitToLast(300),v=>{db.log=arr(v).sort((a,b)=>a.id<b.id?1:-1)})})}
+async function start(){$('#app').innerHTML='<div class="login"><p class="mu">Carregando…</p></div>';
+try{if(!(await R('info').get()).val())throw 0;await listen();ensureBoards();render();log('Login','sessão',me.email);
+tmr=setInterval(()=>{const t=+localStorage.getItem(TS)||0;if(t&&Date.now()-t>=SESSAO_MIN*60000)sair().then(()=>loginView('Sua sessão expirou após 60 minutos. Entre novamente.'))},30000)}
+catch(e){await sair();loginView('Não foi possível carregar os dados da empresa. Tente novamente.')}}
+function refresh(){if(!me)return;clearTimeout(pend);pend=setTimeout(()=>{if(document.querySelector('.modal'))return refresh();ensureBoards();const a=document.activeElement;if(a&&a.id==='q')body();else render()},200)}
+function loginView(m,ok){$('#app').innerHTML=`<div class="login"><div class="card"><h1>in<b>sight</b></h1><p>Consultoria ambiental · Rio de Janeiro</p>
+<div class="fl"><label>E-mail</label><input id="em" type="email" autocomplete="username"></div><div class="fl"><label>Senha</label><div class="pwb"><input id="pw" type="password" autocomplete="current-password"><button type="button" id="eye">mostrar</button></div></div>
+<label class="mu" style="display:flex;gap:6px;align-items:center;margin-bottom:8px"><input type="checkbox" id="lr" checked style="width:auto">Manter conectado</label>
+<div class="err" id="er" ${ok?'style="color:var(--g)"':''}>${esc(m||'')}</div><button class="btn" style="width:100%" id="go">Entrar</button><p style="margin:14px 0 0;text-align:center"><a href="#" id="fg" style="color:var(--g)">Esqueci minha senha</a></p></div></div>`;
+$('#eye').onclick=()=>{const p=$('#pw'),h=p.type==='password';p.type=h?'text':'password';$('#eye').textContent=h?'ocultar':'mostrar';p.focus()};
+$('#fg').onclick=e=>{e.preventDefault();forgotView()};
+const go=async()=>{const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value,e=$('#er'),b=$('#go');e.style.color='';e.textContent='';if(!em||!pw)return e.textContent='Informe e-mail e senha.';b.disabled=true;b.textContent='Verificando...';
+try{const Pe=firebase.auth.Auth.Persistence;await fb.auth.setPersistence($('#lr').checked?Pe.LOCAL:Pe.SESSION);const c=await fb.auth.signInWithEmailAndPassword(em,pw),r=await montar(c.user);
+if(r.erro){await sair();return loginView(r.erro)}me=r.user;localStorage.setItem(TS,Date.now());start()}
+catch(x){await sair();e.textContent=erroAuth(x);b.disabled=false;b.textContent='Entrar'}};
+$('#go').onclick=go;$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('#em').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pw').focus()})}
+function forgotView(){$('#app').innerHTML=`<div class="login"><div class="card"><h1>in<b>sight</b></h1><p>Informe seu e-mail para receber o link de nova senha.</p><div class="fl"><label>E-mail</label><input id="fe" type="email"></div><div class="err" id="er"></div><button class="btn" style="width:100%" id="fs">Enviar link</button><p style="margin:14px 0 0;text-align:center"><a href="#" id="fv" style="color:var(--g)">Voltar</a></p></div></div>`;
+$('#fv').onclick=e=>{e.preventDefault();loginView()};
+$('#fs').onclick=async()=>{const em=$('#fe').value.trim().toLowerCase(),e=$('#er');e.style.color='';if(!em)return e.textContent='Informe seu e-mail.';
+try{await fb.auth.sendPasswordResetEmail(em);e.style.color='var(--g)';e.textContent='Se o e-mail estiver cadastrado, você receberá o link.'}catch(x){e.textContent=x.code==='auth/invalid-email'?'E-mail inválido.':'Falha ao enviar. Tente novamente.'}}}
+
 // ---- helpers
 const lbl=(ent,id)=>{const r=(db[ent]||[]).find(x=>x.id===id);return r?r[E[ent][1][0][0]]:''};
 const cell=(f,v)=>f[2]&&f[2].startsWith('ref:')?esc(lbl(f[2].slice(4),v)):f[2]&&f[2].startsWith('sel:')&&f[0]=='status'?`<span class="tag">${esc(v)}</span>`:f[2]==='num'&&f[0]==='valor'&&v!==''&&v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2}):esc(v);
 // ---- views
-function render(){const a=$('#app');if(!me){a.innerHTML=`<div class="login"><div class="card"><h1>in<b>sight</b></h1><p>Consultoria ambiental · Rio de Janeiro</p>
-<div class="fl"><label>E-mail</label><input id="em" type="email" autocomplete="username"></div><div class="fl"><label>Senha</label><div class="pwb"><input id="pw" type="password" autocomplete="current-password"><button type="button" id="eye">mostrar</button></div></div>
-<div class="err" id="er"></div><button class="btn" style="width:100%" id="go">Entrar</button></div></div>`;
-$('#eye').onclick=()=>{const p=$('#pw'),h=p.type==='password';p.type=h?'text':'password';$('#eye').textContent=h?'ocultar':'mostrar';p.focus()};
-const go=()=>{const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value;let u=db.usuarios.find(u=>String(u.email).toLowerCase()===em&&u.senha===pw);
-if(em===ADMIN_EMAIL&&pw===ADMIN_PASS)u=db.usuarios.find(u=>u.email===ADMIN_EMAIL);if(!u)return $('#er').textContent='E-mail ou senha incorretos.';me={id:u.id,nome:u.nome,email:u.email,perfil:u.perfil};sessionStorage.setItem('insight_me',JSON.stringify(me));log('Login','sessão',u.email);save();render()};
-$('#go').onclick=go;$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('#em').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pw').focus()});return}
+function render(){const a=$('#app');if(!me)return loginView();
 const items=MENU.filter(k=>(k!=='usuarios'&&k!=='log'&&k!=='config')||adm()).flatMap(k=>k==='tabelas'?[k,...db.tabelas.map(t=>'t_'+t.id)]:[k]);
 if(!items.includes(cur))cur='clientes';
 const title=esc(lab(cur));
 a.innerHTML=`<aside id="sb"><div class="logo">in<b>sight</b><small>Consultoria ambiental · RJ</small></div><nav>${items.map(k=>`<a data-k="${k}" class="${k===cur?'on':''}">${esc(lab(k))}</a>`).join('')}</nav>
-<div class="me">${esc(me.nome)}<br>${esc(me.perfil)} · <a href="#" id="out" style="color:var(--g)">sair</a></div></aside>
+<div class="me">${esc(me.nome)}<br>${esc(PERFIS[me.perfil]||me.perfil)} · <a href="#" id="pw2" style="color:var(--g)">senha</a> · <a href="#" id="out" style="color:var(--g)">sair</a></div></aside>
 <main><div class="top"><button class="btn s burger" id="bg">☰</button><h1>${title}</h1>${cur==='tabelas'?'<button class="btn" id="nt">Nova tabela</button>':cur!=='log'&&cur!=='config'&&cur!=='indicadores'?`<input id="q" placeholder="Buscar…" value="${esc(q)}"><button class="btn" id="new">Novo</button>`:''}</div><div id="body"></div></main>`;
 document.querySelectorAll('nav a').forEach(n=>n.onclick=()=>{cur=n.dataset.k;q='';render()});
-$('#out').onclick=e=>{e.preventDefault();log('Logout','sessão',me.email);save();me=null;sessionStorage.removeItem('insight_me');render()};
+$('#out').onclick=e=>{e.preventDefault();log('Logout','sessão',me.email).then(sair).then(()=>loginView())};$('#pw2').onclick=e=>{e.preventDefault();pwdForm()};
 $('#bg').onclick=()=>$('#sb').classList.toggle('open');
 if(cur==='indicadores')return indView();if(cur==='tabelas')return tabView();if(cur==='config')return cfgView();if(cur==='log')return logView();
 $('#new').onclick=()=>form(cur,null,cur==='tarefas'?{board:cb,status:bcols(cb)[0],prioridade:'Média'}:undefined);$('#q').oninput=e=>{q=e.target.value;body()};body()}
-function body(){const b=$('#body');if(cur==='tarefas')return kanban(b);const fs=E[cur][1],cols=fs.slice(0,5);
+function body(){const b=$('#body');if(cur==='tarefas')return kanban(b);if(cur==='usuarios')return usersBody(b);const fs=E[cur][1],cols=fs.slice(0,5);
 const rows=db[cur].filter(r=>!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q.toLowerCase()));
 b.innerHTML=rows.length?`<div class="card tw"><table><tr>${cols.map(f=>`<th>${f[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(f=>`<td>${cell(f,r[f[0]])}</td>`).join('')}<td class="a"><button class="btn s" data-e="${r.id}">Editar</button><button class="btn d" data-d="${r.id}">Excluir</button></td></tr>`).join('')}</table></div>`:`<div class="card empty">Nenhum registro ainda. Use “Novo” para cadastrar.</div>`;
 b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>form(cur,x.dataset.e));b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>del(cur,x.dataset.d))}
-function del(ent,id){if(!confirm('Excluir este registro?'))return;const r=db[ent].find(x=>x.id===id);db[ent]=db[ent].filter(x=>x.id!==id);log('Exclusão',ent,r[E[ent][1][0][0]]);save();render()}
-function form(ent,id,pre){const fs=E[ent][1],r=id?db[ent].find(x=>x.id===id):Object.assign({},pre),m=document.createElement('div');m.className='modal';
+function del(ent,id){if(!confirm('Excluir este registro?'))return;const r=db[ent].find(x=>x.id===id);rem(ent,id);log('Exclusão',ent,r[E[ent][1][0][0]])}
+function form(ent,id,pre){if(ent==='usuarios')return userForm(id);const fs=E[ent][1],r=id?db[ent].find(x=>x.id===id):Object.assign({},pre),m=document.createElement('div');m.className='modal';
 m.innerHTML=`<div class="mb"><h2>${id?'Editar':'Novo'} · ${E[ent][0]}</h2>${fs.map(f=>{const t=ent==='tarefas'&&f[0]==='status'?'sel:'+bcols(r.board).join('|'):(f[2]||'text'),v=r[f[0]]??'';let i;
 if(t.startsWith('ref:'))i=`<select name="${f[0]}"><option value="">—</option>${db[t.slice(4)].map(o=>`<option value="${o.id}" ${o.id===v?'selected':''}>${esc(o[E[t.slice(4)][1][0][0]])}</option>`).join('')}</select>`;
 else if(t.startsWith('sel:'))i=`<select name="${f[0]}">${t.slice(4).split('|').map(o=>`<option ${o===v||(!v&&o===t.slice(4).split('|')[0])?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
@@ -159,10 +158,9 @@ return`<div class="fl"><label>${f[1]}</label>${i}</div>`}).join('')}<div class="
 document.body.appendChild(m);m.querySelector('#c').onclick=()=>m.remove();
 m.querySelector('#s').onclick=()=>{const o={};fs.forEach(f=>o[f[0]]=m.querySelector(`[name=${f[0]}]`).value.trim());
 if(!o[fs[0][0]])return toast('Preencha o campo “'+fs[0][1]+'”');
-if(ent==='usuarios'&&!adm())return toast('Apenas administradores');if(ent==='tarefas')o.board=r.board||cb;
-if(id)Object.assign(r,o),log('Edição',ent,o[fs[0][0]]);else db[ent].push(Object.assign({id:uid()},o)),log('Criação',ent,o[fs[0][0]]);
-save();m.remove();render()}}
-function kanban(b){ensureBoards();if(!db.boards.some(x=>x.id===cb))cb=db.boards[0].id;const bd=db.boards.find(x=>x.id===cb),cs=bd.cols,col=t=>cs.includes(t.status)?t.status:cs[0];
+if(ent==='tarefas')o.board=r.board||cb;
+const n=id?Object.assign({},r,o):Object.assign({id:uid()},o);put(ent,n);log(id?'Edição':'Criação',ent,o[fs[0][0]]);m.remove()}}
+function kanban(b){ensureBoards();if(!db.boards.length)return b.innerHTML='<div class="card empty">Criando quadro…</div>';if(!db.boards.some(x=>x.id===cb))cb=db.boards[0].id;const bd=db.boards.find(x=>x.id===cb),cs=bd.cols,col=t=>cs.includes(t.status)?t.status:cs[0];
 b.innerHTML=`<div class="bt">${db.boards.map(x=>`<button class="btn s ${x.id===cb?'on':''}" data-b="${x.id}">${esc(x.nome)}</button>`).join('')}<button class="btn" id="nb">+ Board</button><button class="btn s" id="eb">Editar board</button></div><div class="kb">${cs.map(c=>{const ts=db.tarefas.filter(t=>t.board===cb&&col(t)===c);return`<div class="col" data-c="${esc(c)}"><h3>${esc(c)}<span>${ts.length}</span></h3>${ts.map(t=>`<div class="tk ${esc(t.prioridade)}" data-id="${t.id}"><b>${esc(t.titulo)}</b><small>${esc(lbl('projetos',t.projeto))}</small><small>${esc(lbl('consultores',t.responsavel))}${t.prazo?' · até '+t.prazo.split('-').reverse().join('/'):''}</small></div>`).join('')}<button class="btn s" style="width:100%" data-n="${esc(c)}">+ Tarefa</button></div>`}).join('')}</div>`;
 b.querySelectorAll('[data-b]').forEach(x=>x.onclick=()=>{cb=x.dataset.b;render()});$('#nb').onclick=()=>boardForm();$('#eb').onclick=()=>boardForm(cb);
 b.querySelectorAll('[data-n]').forEach(x=>x.onclick=()=>form('tarefas',null,{board:cb,status:x.dataset.n,prioridade:'Média'}));
@@ -172,24 +170,23 @@ const mv=ev=>{if(!g&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>6){g=k.cloneNode(tr
 if(g){g.style.left=ev.clientX-30+'px';g.style.top=ev.clientY-14+'px';cols.forEach(c=>c.classList.toggle('over',hit(c,ev)))}};
 const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);
 if(!g)return ev.type==='pointerup'&&form('tarefas',k.dataset.id);g.remove();const c=cols.find(c=>hit(c,ev)),t=db.tarefas.find(x=>x.id===k.dataset.id);
-if(c&&ev.type==='pointerup'&&t&&c.dataset.c!==col(t)){t.status=c.dataset.c;log('Movida','tarefas',t.titulo+' → '+t.status);save()}render()};
+if(c&&ev.type==='pointerup'&&t&&c.dataset.c!==col(t)){put('tarefas',{...t,status:c.dataset.c});log('Movida','tarefas',t.titulo+' → '+c.dataset.c)}render()};
 addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)})}
 let cb='',fl={p:'',sp:'',se:'',de:'',ate:''};
 const bcols=id=>{const b=db.boards.find(x=>x.id===id)||db.boards[0];return b?b.cols:COLS};
 const lab=k=>k==='log'?'Log e auditoria':k==='config'?'GitHub':k==='indicadores'?'Indicadores':E[k][0];
-function ensureBoards(){if(!db.boards.length)db.boards.push({id:db._del&&db._del.b1?'b'+uid():'b1',nome:'Quadro principal',cols:[...COLS]});db.tarefas.forEach(t=>{if(!t.board)t.board=db.boards[0].id})}
-function loadDyn(d){const ts=d.tabelas||[],ks=ts.map(t=>'t_'+t.id);if(d===db)Object.keys(E).filter(k=>k.startsWith('t_')&&!ks.includes(k)).forEach(k=>{delete E[k];delete db[k]});
-ts.forEach(t=>{E['t_'+t.id]=[t.nome,t.cols.map(c=>[c.k,c.r,c.t||undefined])];if(d===db)db['t_'+t.id]=db['t_'+t.id]||[]})}
+function ensureBoards(){if(me&&!db.boards.length&&!ensureBoards.t){ensureBoards.t=1;put('boards',{id:'b1',nome:'Quadro principal',cols:[...COLS]})}}
+function loadDyn(){Object.keys(E).filter(k=>k.startsWith('t_')).forEach(k=>{delete E[k];delete db[k]});db.tabelas.forEach(t=>{E['t_'+t.id]=[t.nome,(t.cols||[]).map(c=>[c.k,c.r,c.t||undefined])];db['t_'+t.id]=arr(DADOS[t.id])})}
 function boardForm(id){const bd=id?db.boards.find(x=>x.id===id):{nome:'',cols:['A fazer','Em andamento','Concluído']},m=document.createElement('div'),can=id&&db.boards.length>1;m.className='modal';
 m.innerHTML=`<div class="mb"><h2>${id?'Editar':'Novo'} board</h2><div class="fl"><label>Nome do board</label><input id="bn" value="${esc(bd.nome)}"></div><div class="fl"><label>Colunas (uma por linha)</label><textarea id="bc" rows="6">${esc(bd.cols.join('\n'))}</textarea></div><div class="ft">${can?'<button class="btn d" id="bx">Excluir</button>':''}<button class="btn s" id="c">Cancelar</button><button class="btn" id="s">Salvar</button></div></div>`;
 document.body.appendChild(m);m.querySelector('#c').onclick=()=>m.remove();
-if(can)m.querySelector('#bx').onclick=()=>{if(!confirm('Excluir o board “'+bd.nome+'” e todas as suas tarefas?'))return;db.tarefas=db.tarefas.filter(t=>t.board!==id);db.boards=db.boards.filter(x=>x.id!==id);cb='';log('Exclusão','boards',bd.nome);save();m.remove();render()};
+if(can)m.querySelector('#bx').onclick=()=>{if(!confirm('Excluir o board “'+bd.nome+'” e todas as suas tarefas?'))return;db.tarefas.filter(t=>t.board===id).forEach(t=>rem('tarefas',t.id));rem('boards',id);cb='';log('Exclusão','boards',bd.nome);m.remove()};
 m.querySelector('#s').onclick=()=>{const nome=m.querySelector('#bn').value.trim(),cols=[...new Set(m.querySelector('#bc').value.split('\n').map(x=>x.trim()).filter(Boolean))];if(!nome)return toast('Informe o nome do board');if(!cols.length)return toast('Informe ao menos uma coluna');
-Object.assign(bd,{nome,cols});if(!id){bd.id=uid();db.boards.push(bd);cb=bd.id}log(id?'Edição':'Criação','boards',nome);save();m.remove();render()}}
+const n=Object.assign({},bd,{nome,cols});if(!id){n.id=uid();cb=n.id}put('boards',n);log(id?'Edição':'Criação','boards',nome);m.remove()}}
 const TY=[['','Texto'],['num','Número'],['date','Data'],['area','Texto longo'],['sel','Lista de opções']];
 function tabView(){const b=$('#body');b.innerHTML=db.tabelas.length?`<div class="card tw"><table><tr><th>Tabela</th><th>Colunas</th><th>Registros</th><th></th></tr>${db.tabelas.map(t=>`<tr><td>${esc(t.nome)}</td><td>${esc(t.cols.map(c=>c.r).join(', '))}</td><td>${(db['t_'+t.id]||[]).length}</td><td class="a"><button class="btn s" data-e="${t.id}">Editar</button><button class="btn d" data-d="${t.id}">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="card empty">Nenhuma tabela criada. Use “Nova tabela”.</div>';
 $('#nt').onclick=()=>tabForm();b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>tabForm(x.dataset.e));
-b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{if(!adm())return toast('Apenas administradores');const t=db.tabelas.find(y=>y.id===x.dataset.d);if(!confirm('Excluir a tabela “'+t.nome+'” e todos os seus registros?'))return;db.tabelas=db.tabelas.filter(y=>y!==t);log('Exclusão','tabelas',t.nome);loadDyn(db);save();render()})}
+b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{if(!adm())return toast('Apenas administradores');const t=db.tabelas.find(y=>y.id===x.dataset.d);if(!confirm('Excluir a tabela “'+t.nome+'” e todos os seus registros?'))return;rem('tabelas',t.id);rem('dados',t.id);log('Exclusão','tabelas',t.nome)})}
 function tabForm(id){const t=id?db.tabelas.find(x=>x.id===id):{nome:'',cols:[{k:'c'+uid(),r:'',t:''}]},m=document.createElement('div');m.className='modal';
 const row=c=>{const ty=(c.t||'').split(':')[0];return`<div class="cr" data-k="${c.k}"><input class="cn" placeholder="Nome da coluna" value="${esc(c.r)}"><select class="ct">${TY.map(([v,l])=>`<option value="${v}" ${v===ty?'selected':''}>${l}</option>`).join('')}</select><input class="co" placeholder="Opções: a;b;c" value="${esc(ty==='sel'?c.t.slice(4).split('|').join(';'):'')}" style="display:${ty==='sel'?'block':'none'}"><button class="btn d x" type="button">×</button></div>`};
 m.innerHTML=`<div class="mb"><h2>${id?'Editar':'Nova'} tabela</h2><div class="fl"><label>Nome da tabela</label><input id="tn" value="${esc(t.nome)}"></div><label class="mu" style="font-size:12px">Colunas (a primeira é o título do registro)</label><div id="cl">${t.cols.map(row).join('')}</div><button class="btn s" id="ac" type="button">+ Coluna</button><div class="ft"><button class="btn s" id="c">Cancelar</button><button class="btn" id="s">Salvar</button></div></div>`;
@@ -198,7 +195,7 @@ const wire=()=>cl.querySelectorAll('.cr').forEach(r=>{r.querySelector('.x').oncl
 m.querySelector('#ac').onclick=()=>{cl.insertAdjacentHTML('beforeend',row({k:'c'+uid(),r:'',t:''}));wire()};m.querySelector('#c').onclick=()=>m.remove();
 m.querySelector('#s').onclick=()=>{const nome=m.querySelector('#tn').value.trim(),cols=[...cl.querySelectorAll('.cr')].map(r=>{const v=r.querySelector('.ct').value,o=r.querySelector('.co').value.split(/[;,]/).map(x=>x.trim()).filter(Boolean).join('|');return{k:r.dataset.k,r:r.querySelector('.cn').value.trim(),t:v==='sel'?'sel:'+o:v,bad:v==='sel'&&!o}}).filter(c=>c.r);
 if(!nome)return toast('Informe o nome da tabela');if(!cols.length)return toast('Adicione ao menos uma coluna');if(cols.some(c=>c.bad))return toast('Informe as opções da coluna do tipo Lista');cols.forEach(c=>delete c.bad);
-if(id)Object.assign(t,{nome,cols});else db.tabelas.push({id:uid(),nome,cols});log(id?'Edição':'Criação','tabelas',nome);loadDyn(db);save();m.remove();render()}}
+put('tabelas',id?{...t,nome,cols}:{id:uid(),nome,cols});log(id?'Edição':'Criação','tabelas',nome);m.remove()}}
 const PC=['#2fbf71','#4aa3df','#e5a23b','#e5534b','#9b7fe6','#3ec9c9','#d96ba0','#8fb339','#c07f4f','#6f8aa3'];
 function pie(t,d){d=d.filter(x=>x[1]>0);const T=d.reduce((a,x)=>a+x[1],0);if(!T)return`<div class="card pc"><h3>${t}</h3><p class="mu">Sem dados para os filtros.</p></div>`;let a=-Math.PI/2,s='';
 d.forEach((x,i)=>{const f=x[1]/T,e=a+f*2*Math.PI,c=PC[i%PC.length];s+=f>=.9999?`<circle cx="90" cy="90" r="80" fill="${c}"/>`:`<path d="M90 90L${90+80*Math.cos(a)} ${90+80*Math.sin(a)}A80 80 0 ${f>.5?1:0} 1 ${90+80*Math.cos(e)} ${90+80*Math.sin(e)}Z" fill="${c}" stroke="var(--p)" stroke-width="2"><title>${esc(x[0])}: ${x[1]}</title></path>`;a=e});
@@ -211,11 +208,30 @@ const es=db.etapas.filter(e=>(!pf||ids.has(e.projeto))&&(!f.se||e.status===f.se)
 const pj=ef?ps.filter(p=>es.some(e=>e.projeto===p.id)):ps,cnt=(a,fn)=>{const m={};a.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)+1});return Object.entries(m)};
 $('#ir').innerHTML=`<div class="kp"><div class="card"><b>${pj.length}</b>Projetos</div><div class="card"><b>${es.length}</b>Etapas</div><div class="card"><b>${es.filter(e=>e.status==='Concluída').length}</b>Etapas concluídas</div></div><div class="pg">${pie('Projetos por status',cnt(pj,p=>p.status||'(sem status)'))}${pie('Etapas por projeto',cnt(es,e=>lbl('projetos',e.projeto)||'(sem projeto)'))}${pie('Etapas por status',cnt(es,e=>e.status||'(sem status)'))}</div>`}
 function logView(){$('#body').innerHTML=db.log.length?`<div class="card tw"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>${db.log.map(l=>`<tr><td>${l.data}</td><td>${esc(l.usuario)}</td><td><span class="tag">${l.acao}</span></td><td>${l.entidade}</td><td>${esc(l.detalhe)}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Sem registros.</div>'}
-function cfgView(){$('#body').innerHTML=`<div class="card" style="padding:22px;max-width:560px"><p style="color:var(--mu);margin-top:0">Os dados ficam neste navegador e são gravados automaticamente no arquivo JSON do Gist abaixo. O token está fixo no código.</p>
-<div class="fl"><label>ID do Gist</label><input id="rp" value="${esc(cfg.gist)}"></div><div class="fl"><label>Arquivo no Gist</label><input id="pt" value="${esc(cfg.path||GH_PATH)}"></div>
-<div class="ft" style="justify-content:flex-start"><button class="btn" id="sv">Salvar e enviar</button><button class="btn s" id="pl">Atualizar agora</button></div></div>`;
-const rd=()=>{cfg={gist:$('#rp').value.trim(),path:$('#pt').value.trim()||GH_PATH,token:GH_TOKEN};localStorage.setItem('insight_cfg',JSON.stringify(cfg))};
-$('#sv').onclick=()=>{rd();localStorage.setItem('insight_dirty','1');syncNow(true)};$('#pl').onclick=()=>{rd();syncNow(true)}}
-mkSnap();if(localStorage.getItem('insight_dirty')===null)localStorage.setItem('insight_dirty','1');
-render();syncNow(false);
+function usersBody(b){const rows=db.usuarios.filter(u=>!q||JSON.stringify(u).toLowerCase().includes(q.toLowerCase()));
+b.innerHTML=rows.length?`<div class="card tw"><table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th></th></tr>${rows.map(u=>`<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${esc(PERFIS[u.perfil]||u.perfil)}</td><td><span class="tag">${u.ativo===false?'Inativo':'Ativo'}</span></td><td class="a"><button class="btn s" data-e="${u.id}">Editar</button>${u.id===me.uid?'':`<button class="btn d" data-a="${u.id}">${u.ativo===false?'Ativar':'Inativar'}</button>`}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Nenhum usuário.</div>';
+b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>userForm(x.dataset.e));b.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>toggleUser(x.dataset.a))}
+async function toggleUser(id){const u=db.usuarios.find(x=>x.id===id);if(!u||!adm())return;const a=u.ativo===false;
+try{await fb.db.ref('perfis/'+id+'/ativo').set(a);await R('usuarios/'+id+'/ativo').set(a);log(a?'Ativação':'Inativação','usuarios',u.email);toast(a?'Usuário ativado':'Usuário inativado')}catch(e){fail(e)}}
+/* cria a conta no Authentication por um app secundário, para não derrubar a sessão do administrador */
+async function criarAuth(email){const app=firebase.initializeApp(firebaseConfig,'sec'+Date.now());
+try{const A='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789',pw=Array.from(crypto.getRandomValues(new Uint8Array(20)),x=>A[x%A.length]).join('');
+const c=await app.auth().createUserWithEmailAndPassword(email,pw);await app.auth().signOut();return c.user.uid}finally{app.delete()}}
+function userForm(id){if(!adm())return toast('Apenas administradores');const u=id?db.usuarios.find(x=>x.id===id):{nome:'',email:'',perfil:'analista'},self=id===me.uid,m=document.createElement('div');m.className='modal';
+m.innerHTML=`<div class="mb"><h2>${id?'Editar':'Novo'} · Usuário</h2><div class="fl"><label>Nome</label><input id="un" value="${esc(u.nome)}"></div><div class="fl"><label>E-mail</label><input id="ue" type="email" value="${esc(u.email)}" ${id?'readonly':''}></div><div class="fl"><label>Perfil</label><select id="up" ${self?'disabled':''}>${Object.entries(PERFIS).map(([k,v])=>`<option value="${k}" ${k===u.perfil?'selected':''}>${v}</option>`).join('')}</select></div>${id?'':'<p class="mu" style="font-size:13px">O usuário receberá um e-mail para criar a própria senha.</p>'}<div class="err" id="ur"></div><div class="ft"><button class="btn s" id="c">Cancelar</button><button class="btn" id="s">Salvar</button></div></div>`;
+document.body.appendChild(m);m.querySelector('#c').onclick=()=>m.remove();
+m.querySelector('#s').onclick=async()=>{const nome=m.querySelector('#un').value.trim(),email=m.querySelector('#ue').value.trim().toLowerCase(),perfil=self?u.perfil:m.querySelector('#up').value,er=m.querySelector('#ur'),bt=m.querySelector('#s');
+if(!nome||!/^\S+@\S+\.\S+$/.test(email))return er.textContent='Informe o nome e um e-mail válido.';bt.disabled=true;
+try{if(id){const d={nome,perfil};await fb.db.ref('perfis/'+id).update(d);await R('usuarios/'+id).update(d);log('Edição','usuarios',email)}
+else{const k=await criarAuth(email),d={nome,email,perfil,ativo:true};await fb.db.ref('perfis/'+k).set({...d,empresa:EMP});await R('usuarios/'+k).set(d);try{await fb.auth.sendPasswordResetEmail(email)}catch(e){}log('Criação','usuarios',email);toast('Usuário criado. E-mail para definir a senha enviado.')}
+m.remove()}catch(e){er.textContent=e.code==='auth/email-already-in-use'?'Este e-mail já está cadastrado.':e.code==='auth/invalid-email'?'E-mail inválido.':/permission/i.test(e.message||'')?'Sem permissão.':'Não foi possível salvar.';bt.disabled=false}}}
+function pwdForm(){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="mb"><h2>Alterar senha</h2><div class="fl"><label>Senha atual</label><input id="p1" type="password" autocomplete="current-password"></div><div class="fl"><label>Nova senha (mín. 6 caracteres)</label><input id="p2" type="password" autocomplete="new-password"></div><div class="err" id="pe"></div><div class="ft"><button class="btn s" id="c">Cancelar</button><button class="btn" id="s">Alterar</button></div></div>`;
+document.body.appendChild(m);m.querySelector('#c').onclick=()=>m.remove();
+m.querySelector('#s').onclick=async()=>{const a=m.querySelector('#p1').value,n=m.querySelector('#p2').value,e=m.querySelector('#pe');if(!a)return e.textContent='Informe a senha atual.';if(n.length<6)return e.textContent='A nova senha precisa ter pelo menos 6 caracteres.';
+try{const u=fb.auth.currentUser;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,a));await u.updatePassword(n);m.remove();toast('Senha alterada')}catch(x){e.textContent=['auth/invalid-credential','auth/wrong-password'].includes(x.code)?'Senha atual incorreta.':'Falha ao alterar a senha.'}}}
+(async()=>{$('#app').innerHTML='<div class="login"><p class="mu">Carregando…</p></div>';
+const u=await new Promise(r=>{const o=fb.auth.onAuthStateChanged(x=>{o();r(x)})}),ts=+localStorage.getItem(TS)||0;
+if(u&&ts&&Date.now()-ts>=SESSAO_MIN*60000){await sair();return loginView('Sua sessão expirou após 60 minutos. Entre novamente.')}
+if(u){try{const r=await montar(u);if(r.user){me=r.user;if(!ts)localStorage.setItem(TS,Date.now());return start()}}catch(e){}await sair()}
+loginView()})();
 </script></body></html>
