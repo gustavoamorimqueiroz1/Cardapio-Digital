@@ -310,31 +310,114 @@ privacidade:{title:'Política de Privacidade',body:`<h2>1. Quais dados podem ser
 lgpd:{title:'Privacidade e LGPD',body:`<h2>1. Compromisso com a LGPD</h2><p>O tratamento de dados pessoais realizado por meio do INSIGHT deve observar a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais – LGPD), incluindo os princípios da finalidade, adequação, necessidade, transparência, segurança, prevenção e responsabilização.</p><h2>2. Papéis no tratamento</h2><p>Em regra, a organização cliente define as finalidades e os meios essenciais do tratamento dos dados pessoais que cadastra na plataforma, atuando como controladora. O fornecedor do INSIGHT poderá atuar como operador desses dados, conforme as instruções e o contrato aplicável. Para dados tratados para administrar a própria relação comercial, segurança e suporte, o fornecedor poderá atuar como controlador, conforme o caso concreto.</p><h2>3. Bases legais e minimização</h2><p>A organização cliente deve assegurar uma base legal adequada para cada operação de tratamento e cadastrar apenas os dados necessários à finalidade pretendida. O sistema não deve ser utilizado para armazenar dados pessoais excessivos ou sem justificativa.</p><h2>4. Segurança e incidentes</h2><p>São adotadas medidas técnicas e administrativas proporcionais aos riscos para proteger dados pessoais. Suspeitas de incidente devem ser comunicadas sem demora pelos canais de suporte, para avaliação, contenção e adoção das providências cabíveis, inclusive comunicações legalmente exigidas.</p><h2>5. Solicitações dos titulares</h2><p>Pedidos de titulares devem ser encaminhados à organização responsável pelo tratamento. Quando o fornecedor atuar como operador, apoiará o cliente, dentro das possibilidades técnicas e contratuais, no atendimento das solicitações.</p><h2>6. Transferência e fornecedores</h2><p>O uso de provedores de infraestrutura pode envolver processamento ou armazenamento em ambientes operados por fornecedores especializados, inclusive fora do país, conforme a configuração dos serviços contratados. Quando aplicável, deverão ser observados os requisitos legais para transferência internacional e as salvaguardas pertinentes.</p><h2>7. Canal de contato</h2><p>Para dúvidas ou solicitações sobre privacidade e proteção de dados, utilize o canal de contato informado pela organização contratante ou pelo fornecedor do INSIGHT.</p>`}};const d=docs[kind]||docs.termos;$('#app').innerHTML=`<main class="terms-page"><a href="javascript:window.close()" class="muted">Fechar esta aba</a><h1>${d.title}</h1><p class="muted">Última atualização: 16 de novembro de 2026</p>${d.body}<p class="muted">Este texto é informativo e deve ser ajustado aos contratos, fornecedores, práticas efetivas e canais oficiais do operador da plataforma antes da publicação como documento jurídico definitivo.</p></main>`}
 
 /* ============================================================================
-   MÓDULO SUPERADMIN (REFEITO DO ZERO)
+   MÓDULO SUPERADMIN (BLINDADO COM DIAGNÓSTICO DE ERRO)
    ============================================================================ */
-let SA={profiles:{},companies:[],user:null,filtro:''};
+let SA = { profiles: {}, companies: [], user: null, filtro: '' };
 
-function isSuperadminRoute(){
+function isSuperadminRoute() {
   return /\/admin\/?$/.test(location.pathname)
-      || new URLSearchParams(location.search).get('pagina')==='admin'
-      || location.hash==='#admin';
+      || new URLSearchParams(location.search).get('pagina') === 'admin'
+      || location.hash === '#admin';
 }
 
-function irParaSuperadmin(){
-  const url=new URL(location.href);
-  url.searchParams.set('pagina','admin');
-  history.pushState({pagina:'admin'},'',url.toString());
-  saLoginView();
-}
-
-function voltarParaLoginPrincipal(){
-  const url=new URL(location.href);
+function voltarParaLoginPrincipal() {
+  const url = new URL(location.href);
   url.searchParams.delete('pagina');
-  if(url.hash==='#admin')url.hash='';
-  history.pushState({},'',url.toString());
+  if (url.hash === '#admin') url.hash = '';
+  history.pushState({}, '', url.toString());
   loginView();
 }
 
+/* 1. Tela de Login do Superadmin */
+function saLoginView(msg = '') {
+  $('#app').innerHTML = `
+    <div class="login">
+      <div>
+        <div class="card">
+          <h1>in<b>sight</b></h1>
+          <p>Acesso restrito · Superadmin</p>
+          <div class="fl">
+            <label>E-mail do Superadmin</label>
+            <input id="saEmail" type="email" autocomplete="username">
+          </div>
+          <div class="fl">
+            <label>Senha</label>
+            <div class="pwb">
+              <input id="saPass" type="password" autocomplete="current-password">
+              <button type="button" id="saEye">mostrar</button>
+            </div>
+          </div>
+          <div class="err" id="saError" style="margin-bottom:10px;white-space:pre-wrap">${esc(msg)}</div>
+          <button type="button" class="btn" id="saEnter" style="width:100%">Entrar no Painel Superadmin</button>
+          <button type="button" class="login-admin-btn" id="saBackLogin">← Voltar para o login principal</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $('#saEye').onclick = () => {
+    const p = $('#saPass'), h = p.type === 'password';
+    p.type = h ? 'text' : 'password';
+    $('#saEye').textContent = h ? 'ocultar' : 'mostrar';
+    p.focus();
+  };
+
+  $('#saBackLogin').onclick = () => voltarParaLoginPrincipal();
+
+  const autenticarSuperadmin = async () => {
+    const email = $('#saEmail').value.trim().toLowerCase();
+    const senha = $('#saPass').value;
+    const err = $('#saError');
+    const btn = $('#saEnter');
+
+    err.style.color = 'var(--r)';
+    err.textContent = '';
+
+    if (!email || !senha) {
+      err.textContent = 'Informe o e-mail e a senha.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Autenticando...';
+
+    try {
+      await fb.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+      const cred = await fb.auth.signInWithEmailAndPassword(email, senha);
+      const uidLogado = cred.user.uid;
+
+      btn.textContent = 'Verificando permissão...';
+      const snap = await fb.db.ref('perfis/' + uidLogado).get();
+      const perfil = snap.val();
+
+      if (!perfil) {
+        await fb.auth.signOut();
+        throw new Error('Perfil não encontrado no banco para o UID: ' + uidLogado);
+      }
+      if (perfil.perfil !== 'superadmin') {
+        await fb.auth.signOut();
+        throw new Error('Acesso negado: o perfil cadastrado é "' + perfil.perfil + '", mas precisa ser "superadmin".');
+      }
+      if (perfil.ativo === false) {
+        await fb.auth.signOut();
+        throw new Error('Esta conta de superadmin está marcada como ativo: false.');
+      }
+
+      SA.user = { uid: uidLogado, email: perfil.email || cred.user.email, nome: perfil.nome || 'Superadmin' };
+      await saCarregarUsuarios();
+    } catch (e) {
+      console.error('Erro no login Superadmin:', e);
+      const detalhe = e && e.code ? erroAuth(e) + ' (' + e.code + ')' : (e && e.message ? e.message : String(e));
+      err.textContent = detalhe;
+      btn.disabled = false;
+      btn.textContent = 'Entrar no Painel Superadmin';
+    }
+  };
+
+  $('#saEnter').addEventListener('click', autenticarSuperadmin);
+  $('#saPass').addEventListener('keydown', e => { if (e.key === 'Enter') autenticarSuperadmin(); });
+  $('#saEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('#saPass').focus(); });
+}
 window.addEventListener('popstate',()=>{
   if(isSuperadminRoute()){
     if(SA.user)saCarregarUsuarios();
@@ -346,84 +429,8 @@ window.addEventListener('popstate',()=>{
   }
 });
 
-/* 1. Tela de Login do Superadmin */
-function saLoginView(msg=''){
-  $('#app').innerHTML=`
-    <div class="login">
-      <div>
-        <div class="card">
-          <h1>in<b>sight</b></h1>
-          <p>Acesso restrito · Superadmin</p>
-          <div class="fl">
-            <label>E-mail do Superadmin</label>
-            <input id="saEmail" type="email" autocomplete="username" placeholder="superadmin@insight.com.br">
-          </div>
-          <div class="fl">
-            <label>Senha</label>
-            <div class="pwb">
-              <input id="saPass" type="password" autocomplete="current-password">
-              <button type="button" id="saEye">mostrar</button>
-            </div>
-          </div>
-          <div class="err" id="saError">${esc(msg)}</div>
-          <button class="btn" id="saEnter" style="width:100%">Entrar no Painel Superadmin</button>          
-        </div>
-      </div>
-    </div>
-  `;
 
-  $('#saEye').onclick=()=>{
-    const p=$('#saPass'),h=p.type==='password';
-    p.type=h?'text':'password';
-    $('#saEye').textContent=h?'ocultar':'mostrar';
-    p.focus();
-  };
 
-  $('#saBackLogin').onclick=()=>voltarParaLoginPrincipal();
-
-  const autenticarSuperadmin=async()=>{
-    const email=$('#saEmail').value.trim().toLowerCase();
-    const senha=$('#saPass').value;
-    const err=$('#saError');
-    const btn=$('#saEnter');
-
-    err.textContent='';
-    if(!email||!senha){
-      err.textContent='Informe o e-mail e a senha.';
-      return;
-    }
-
-    btn.disabled=true;
-    btn.textContent='Autenticando...';
-
-    try{
-      await fb.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-      const cred=await fb.auth.signInWithEmailAndPassword(email,senha);
-      const snap=await fb.db.ref('perfis/'+cred.user.uid).get();
-      const perfil=snap.val();
-
-      if(!perfil || perfil.perfil!=='superadmin'){
-        await fb.auth.signOut();
-        throw new Error('Acesso negado: esta conta não possui perfil superadmin.');
-      }
-      if(perfil.ativo===false){
-        await fb.auth.signOut();
-        throw new Error('Conta de superadmin inativa.');
-      }
-
-      SA.user={uid:cred.user.uid,email:perfil.email||cred.user.email,nome:perfil.nome||'Superadmin'};
-      await saCarregarUsuarios();
-    }catch(e){
-      err.textContent=e.code?erroAuth(e):(e.message||'Não foi possível autenticar.');
-      btn.disabled=false;
-      btn.textContent='Entrar no Painel Superadmin';
-    }
-  };
-
-  $('#saEnter').onclick=autenticarSuperadmin;
-  $('#saPass').addEventListener('keydown',e=>{if(e.key==='Enter')autenticarSuperadmin()});
-  $('#saEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('#saPass').focus()});
-}
 
 /* 2. Carregamento dos usuários agrupados por empresa */
 async function saCarregarUsuarios(){
