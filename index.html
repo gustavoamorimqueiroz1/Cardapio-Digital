@@ -14,7 +14,7 @@ aside{position:fixed;inset:0 auto 0 0;width:236px;background:var(--p);border-rig
 .logo{padding:20px 20px 14px;font-size:24px;font-weight:800;letter-spacing:-.5px}.logo b{color:var(--g)}.logo small{display:block;font-size:12px;font-weight:400;color:var(--mu);letter-spacing:0}
 nav{flex:1;overflow:auto;padding:6px 10px}nav a{display:block;padding:8px 12px;border-radius:8px;color:var(--mu);cursor:pointer;margin:1px 0}
 nav a:hover{background:var(--p2);color:var(--tx)}nav a.on{background:rgba(47,191,113,.14);color:var(--g);font-weight:600}
-.me{padding:14px 18px;border-top:1px solid var(--ln);font-size:13px;color:var(--mu)}
+.emp{padding:16px 20px 0;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--g);word-break:break-word}.emp small{display:block;font-weight:400;color:var(--mu);text-transform:none;letter-spacing:0;font-size:11px}.fi{font-size:12px;color:var(--mu);margin-top:5px}.fi label{display:inline;color:var(--tx)}.me{padding:14px 18px;border-top:1px solid var(--ln);font-size:13px;color:var(--mu)}
 main{margin-left:236px;padding:26px 30px;min-height:100vh}
 .top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}.top h1{margin:0;font-size:26px;flex:1}.top input{max-width:240px}
 .burger{display:none}
@@ -95,7 +95,7 @@ processos:['Processos administrativos',[['numero','Nº do processo'],['projeto',
 vistorias:['Vistorias',[['local','Local / Título'],['data','Data','date'],['projeto','Projeto','ref:projetos'],['equipe','Equipe presente'],['clima','Clima'],['coords','Coordenadas'],['obs','Observações','area'],['foto','Link das fotos']]],
 monitoramento:['Monitoramento',[['ponto','Ponto de amostragem'],['tipo','Tipo','sel:Água|Solo|Ar|Ruído|Fauna|Flora'],['data','Data da coleta','date'],['lab','Laboratório','ref:fornecedores'],['laudo','Resultado / link do laudo']]],
 fornecedores:['Fornecedores',[['nome','Nome'],['tipo','Tipo','sel:Laboratório|Topografia|Perfuração de poços|Outro'],['acred','Acreditação (ISO 17025) / certidões'],['contato','Contato']]],
-arquivos:['Arquivos',[['nome','Nome do arquivo'],['projeto','Projeto','ref:projetos'],['tipo','Tipo','sel:EIA/RIMA|RCA|Protocolo|Recibo|Shapefile|KML|GeoJSON|Outro'],['versao','Versão'],['link','Link / local']]],
+arquivos:['Arquivos',[['nome','Nome do arquivo'],['projeto','Projeto','ref:projetos'],['tipo','Tipo','sel:EIA/RIMA|RCA|Protocolo|Recibo|Shapefile|KML|GeoJSON|Outro'],['versao','Versão'],['link','Link / local (opcional)'],['anexo','Arquivo (salvo na base de dados)','file']]],
 usuarios:['Perfis e usuários',[['nome','Nome'],['email','E-mail'],['perfil','Perfil']]],
 tarefas:['Tarefas (Kanban)',[['titulo','Tarefa'],['projeto','Projeto','ref:projetos'],['responsavel','Responsável','ref:consultores'],['prazo','Prazo','date'],['prioridade','Prioridade','sel:Baixa|Média|Alta'],['status','Coluna','sel:A fazer|Em andamento|Revisão|Concluído']]],
 tabelas:['Tabelas dinâmicas',[['nome','Nome']]],boards:['Boards',[['nome','Nome']]]
@@ -144,7 +144,7 @@ on(R('dados'),v=>{DADOS=v||{};loadDyn()});
 if(podeVerLog())on(R('log').limitToLast(300),v=>{db.log=arr(v).sort((a,b)=>a.id<b.id?1:-1)})})}
 
 async function start(){$('#app').innerHTML='<div class="login"><p class="mu">Carregando…</p></div>';
-try{if(!(await R('info').get()).val())throw 0;await listen();ensureBoards();cur='clientes';q='';render();
+try{const inf=(await R('info').get()).val();if(!inf)throw 0;me.empresaNome=inf.nome||EMP;document.title='Insight · '+me.empresaNome;await listen();ensureBoards();cur='clientes';q='';render();
 tmr=setInterval(()=>{const t=+localStorage.getItem(TS)||0;if(t&&Date.now()-t>=SESSAO_MIN*60000)sair().then(()=>loginView('Sua sessão expirou após 60 minutos. Entre novamente.'))},30000)}
 catch(e){await sair();loginView('Não foi possível carregar os dados da empresa. Tente novamente.')}}
 
@@ -172,7 +172,7 @@ try{await fb.auth.sendPasswordResetEmail(em);e.style.color='var(--g)';e.textCont
 
 // ---- helpers
 const lbl=(ent,id)=>{const r=(db[ent]||[]).find(x=>x.id===id);return r?r[E[ent][1][0][0]]:''};
-const cell=(f,v)=>f[2]&&f[2].startsWith('ref:')?esc(lbl(f[2].slice(4),v)):f[2]&&f[2].startsWith('sel:')&&f[0]=='status'?`<span class="tag">${esc(v)}</span>`:f[2]==='num'&&f[0]==='valor'&&v!==''&&v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2}):esc(v);
+const cell=(f,v)=>f[2]&&f[2].startsWith('ref:')?esc(lbl(f[2].slice(4),v)):f[2]&&f[2].startsWith('sel:')&&f[0]=='status'?`<span class="tag">${esc(v)}</span>`:f[2]==='date'&&/^\d{4}-\d{2}-\d{2}$/.test(v||'')?v.split('-').reverse().join('/'):f[0]==='link'&&/^https?:\/\//i.test(v||'')?`<a href="${esc(v)}" target="_blank" rel="noopener noreferrer" style="color:var(--g)">abrir link</a>`:f[2]==='num'&&f[0]==='valor'&&v!==''&&v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2}):esc(v);
 
 // ---- views
 function render(){const a=$('#app');if(!me)return loginView();
@@ -182,33 +182,47 @@ const items=[
 ];
 if(!items.includes(cur))cur='clientes';
 const title=esc(lab(cur));
-a.innerHTML=`<aside id="sb"><div class="logo">in<b>sight</b><small>Consultoria ambiental · RJ</small></div><nav>${items.map(k=>`<a data-k="${k}" class="${k===cur?'on':''}">${esc(lab(k))}</a>`).join('')}</nav>
+a.innerHTML=`<aside id="sb"><div class="emp"><small>Empresa</small>${esc(me.empresaNome||EMP)}</div><div class="logo">in<b>sight</b><small>Consultoria ambiental · RJ</small></div><nav>${items.map(k=>`<a data-k="${k}" class="${k===cur?'on':''}">${esc(lab(k))}</a>`).join('')}</nav>
 <div class="me">${esc(me.nome)}<br>${esc(PERFIS[me.perfil]||me.perfil)} · <a href="#" id="pw2" style="color:var(--g)">senha</a> · <a href="#" id="out" style="color:var(--g)">sair</a></div></aside>
 <div id="menuBackdrop"></div><main><div class="top"><button class="btn s burger" id="bg">☰</button><h1>${title}</h1>${cur==='tabelas'?'<button class="btn" id="nt">Nova tabela</button>':cur!=='log'&&cur!=='config'&&cur!=='indicadores'?`<input id="q" placeholder="Buscar…" value="${esc(q)}"><button class="btn" id="new">Novo</button>`:''}</div><div id="body"></div><div id="appFooter"></div></main>`;
 document.querySelectorAll('nav a').forEach(n=>n.onclick=()=>{cur=n.dataset.k;q='';render()});
 $('#out').onclick=e=>{e.preventDefault();sair().then(()=>loginView())};$('#pw2').onclick=e=>{e.preventDefault();pwdForm()};
-$('#bg').onclick=()=>{const open=$('#sb').classList.toggle('open');$('#menuBackdrop').classList.toggle('on',open)};$('#menuBackdrop').onclick=()=>{$('#sb').classList.remove('open');$('#menuBackdrop').classList.remove('on')};document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#sb')?.classList.remove('open');$('#menuBackdrop')?.classList.remove('on')}});
+$('#bg').onclick=()=>{const open=$('#sb').classList.toggle('open');$('#menuBackdrop').classList.toggle('on',open)};$('#menuBackdrop').onclick=()=>{$('#sb').classList.remove('open');$('#menuBackdrop').classList.remove('on')};document.addEventListener('keydown',e=>{if(e.key==='Escape'){[...document.querySelectorAll('.modal')].pop()?.remove();$('#sb')?.classList.remove('open');$('#menuBackdrop')?.classList.remove('on')}});
 if(cur==='indicadores'){indView();renderFooter();return}if(cur==='tabelas'){tabView();renderFooter();return}if(cur==='config'){cfgView();renderFooter();return}if(cur==='log'){logView();renderFooter();return}
 $('#new').onclick=()=>form(cur,null,cur==='tarefas'?{board:cb,status:bcols(cb)[0],prioridade:'Média'}:undefined);$('#q').oninput=e=>{q=e.target.value;body()};body();renderFooter()}
 
-function body(){const b=$('#body');if(cur==='tarefas')return kanban(b);if(cur==='usuarios')return usersBody(b);const fs=E[cur][1],cols=fs.slice(0,5);
+function body(){const b=$('#body');if(cur==='tarefas')return kanban(b);if(cur==='usuarios')return usersBody(b);const fs=E[cur][1],cols=fs.filter(f=>f[2]!=='file').slice(0,5);
 const rows=db[cur].filter(r=>!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q.toLowerCase()));
-b.innerHTML=rows.length?`<div class="card tw"><table><tr>${cols.map(f=>`<th>${f[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(f=>`<td>${cell(f,r[f[0]])}</td>`).join('')}<td class="a"><button class="btn s" data-e="${r.id}">Editar</button><button class="btn d" data-d="${r.id}">Excluir</button></td></tr>`).join('')}</table></div>`:`<div class="card empty">Nenhum registro ainda. Use “Novo” para cadastrar.</div>`;
-b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>form(cur,x.dataset.e));b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>del(cur,x.dataset.d))}
-function del(ent,id){if(!confirm('Excluir este registro?'))return;const r=db[ent].find(x=>x.id===id);rem(ent,id);log('Exclusão',ent,r[E[ent][1][0][0]])}
+b.innerHTML=rows.length?`<div class="card tw"><table><tr>${cols.map(f=>`<th>${f[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(f=>`<td>${cell(f,r[f[0]])}</td>`).join('')}<td class="a">${r.anexo&&r.anexo.nome?`<button class="btn s" data-f="${r.id}" title="${esc(r.anexo.nome)}">Baixar</button>`:''}<button class="btn s" data-e="${r.id}">Editar</button><button class="btn d" data-d="${r.id}">Excluir</button></td></tr>`).join('')}</table></div>`:`<div class="card empty">Nenhum registro ainda. Use “Novo” para cadastrar.</div>`;
+b.querySelectorAll('[data-f]').forEach(x=>x.onclick=()=>baixar(x.dataset.f));b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>form(cur,x.dataset.e));b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>del(cur,x.dataset.d))}
+function del(ent,id){if(!confirm('Excluir este registro?'))return;const r=db[ent].find(x=>x.id===id);rem(ent,id);if(ent==='arquivos')R('arquivos_dados/'+id).remove().catch(()=>{});log('Exclusão',ent,r[E[ent][1][0][0]])}
 function form(ent,id,pre){if(ent==='usuarios')return userForm(id);const fs=E[ent][1],r=id?db[ent].find(x=>x.id===id):Object.assign({},pre),m=document.createElement('div');m.className='modal';
 m.innerHTML=`<div class="mb"><h2>${id?'Editar':'Novo'} · ${E[ent][0]}</h2>${fs.map(f=>{const t=ent==='tarefas'&&f[0]==='status'?'sel:'+bcols(r.board).join('|'):(f[2]||'text'),v=r[f[0]]??'';let i;
 if(t.startsWith('ref:'))i=`<select name="${f[0]}"><option value="">—</option>${db[t.slice(4)].map(o=>`<option value="${o.id}" ${o.id===v?'selected':''}>${esc(o[E[t.slice(4)][1][0][0]])}</option>`).join('')}</select>`;
 else if(t.startsWith('sel:'))i=`<select name="${f[0]}">${t.slice(4).split('|').map(o=>`<option ${o===v||(!v&&o===t.slice(4).split('|')[0])?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+else if(t==='file')i=`<input name="${f[0]}" type="file">${r.anexo&&r.anexo.nome?`<div class="fi">Atual: <b>${esc(r.anexo.nome)}</b> (${Math.round((r.anexo.tam||0)/1024)} KB) · <label><input type="checkbox" id="rmf" style="width:auto"> remover</label></div>`:`<div class="fi">Máx. ${MAXMB} MB. Você também pode usar apenas o campo de link.</div>`}`;
 else if(t==='area')i=`<textarea name="${f[0]}" rows="3">${esc(v)}</textarea>`;
 else {const phone=(/telefone|celular|fone/i.test(f[0]+' '+f[1]))||(ent==='clientes'&&f[0]==='contato');i=`<input name="${f[0]}" type="${phone?'tel':t==='num'?'number':t==='date'?'date':'text'}" ${phone?'maxlength="14" inputmode="numeric" pattern="[0-9]{1,14}"':''} step="any" value="${esc(v)}">`;}
 return`<div class="fl"><label>${f[1]}</label>${i}</div>`}).join('')}<div class="ft"><button class="btn s" id="c">Cancelar</button><button class="btn" id="s">Salvar</button></div></div>`;
 document.body.appendChild(m);m.querySelector('#c').onclick=()=>m.remove();
 const phoneField=m.querySelector('[name=contato]');if(ent==='clientes'&&phoneField)phoneField.addEventListener('input',()=>phoneField.value=phoneField.value.replace(/\D/g,'').slice(0,14));
-m.querySelector('#s').onclick=()=>{const o={};fs.forEach(f=>o[f[0]]=m.querySelector(`[name=${f[0]}]`).value.trim());if(ent==='clientes'&&o.contato&&!/^\d{1,14}$/.test(o.contato))return toast('O contato responsável deve conter somente números (máximo 14 dígitos).');
+m.querySelector('#s').onclick=async()=>{const o={};fs.filter(f=>f[2]!=='file').forEach(f=>o[f[0]]=m.querySelector(`[name=${f[0]}]`).value.trim());if(ent==='clientes'&&o.contato&&!/^\d{1,14}$/.test(o.contato))return toast('O contato responsável deve conter somente números (máximo 14 dígitos).');
 if(!o[fs[0][0]])return toast('Preencha o campo “'+fs[0][1]+'”');
 if(ent==='tarefas')o.board=r.board||cb;
-const n=id?Object.assign({},r,o):Object.assign({id:uid()},o);put(ent,n);log(id?'Edição':'Criação',ent,o[fs[0][0]]);m.remove()}}
+const n=id?Object.assign({},r,o):Object.assign({id:uid()},o);
+const sb=m.querySelector('#s'),fi=m.querySelector('input[type=file]');
+if(fi){const f=fi.files[0];
+if(f&&f.size>MAXMB*1048576)return toast('Arquivo maior que '+MAXMB+' MB.');
+sb.disabled=true;sb.textContent='Salvando…';
+try{if(f){const data=await new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=no;fr.readAsDataURL(f)});
+await R('arquivos_dados/'+n.id).set({data});n.anexo={nome:f.name,tipo:f.type||'application/octet-stream',tam:f.size}}
+else if(m.querySelector('#rmf')?.checked){await R('arquivos_dados/'+n.id).remove();delete n.anexo}}
+catch(e){sb.disabled=false;sb.textContent='Salvar';return fail(e)}}
+put(ent,n);log(id?'Edição':'Criação',ent,o[fs[0][0]]);m.remove()}}
+const MAXMB=5;
+async function baixar(id){const r=db.arquivos.find(x=>x.id===id);if(!r||!r.anexo)return;toast('Baixando…');
+try{const d=(await R('arquivos_dados/'+id).get()).val();if(!d||!d.data)return toast('Arquivo não encontrado na base.');
+const a=document.createElement('a');a.href=d.data;a.download=r.anexo.nome;document.body.appendChild(a);a.click();a.remove()}catch(e){fail(e)}}
 function kanban(b){ensureBoards();if(!db.boards.length)return b.innerHTML='<div class="card empty">Criando quadro…</div>';if(!db.boards.some(x=>x.id===cb))cb=db.boards[0].id;const bd=db.boards.find(x=>x.id===cb),cs=bd.cols,col=t=>cs.includes(t.status)?t.status:cs[0];
 b.innerHTML=`<div class="bt">${db.boards.map(x=>`<button class="btn s ${x.id===cb?'on':''}" data-b="${x.id}">${esc(x.nome)}</button>`).join('')}<button class="btn" id="nb">+ Board</button><button class="btn s" id="eb">Editar board</button></div><div class="kb">${cs.map(c=>{const ts=db.tarefas.filter(t=>t.board===cb&&col(t)===c);return`<div class="col" data-c="${esc(c)}"><h3>${esc(c)}<span>${ts.length}</span></h3>${ts.map(t=>`<div class="tk ${esc(t.prioridade)}" data-id="${t.id}"><b>${esc(t.titulo)}</b><small>${esc(lbl('projetos',t.projeto))}</small><small>${esc(lbl('consultores',t.responsavel))}${t.prazo?' · até '+t.prazo.split('-').reverse().join('/'):''}</small></div>`).join('')}<button class="btn s" style="width:100%" data-n="${esc(c)}">+ Tarefa</button></div>`}).join('')}</div>`;
 b.querySelectorAll('[data-b]').forEach(x=>x.onclick=()=>{cb=x.dataset.b;render()});$('#nb').onclick=()=>boardForm();$('#eb').onclick=()=>boardForm(cb);
@@ -256,7 +270,7 @@ function indRes(){const f=fl,pf=f.p||f.sp,ef=f.se||f.de||f.ate,ps=db.projetos.fi
 const es=db.etapas.filter(e=>(!pf||ids.has(e.projeto))&&(!f.se||e.status===f.se)&&(!f.de||(e.prazo&&e.prazo>=f.de))&&(!f.ate||(e.prazo&&e.prazo<=f.ate)));
 const pj=ef?ps.filter(p=>es.some(e=>e.projeto===p.id)):ps,cnt=(a,fn)=>{const m={};a.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)+1});return Object.entries(m)};
 $('#ir').innerHTML=`<div class="kp"><div class="card"><b>${pj.length}</b>Projetos</div><div class="card"><b>${es.length}</b>Etapas</div><div class="card"><b>${es.filter(e=>e.status==='Concluída').length}</b>Etapas concluídas</div></div><div class="pg">${pie('Projetos por status',cnt(pj,p=>p.status||'(sem status)'))}${pie('Etapas por projeto',cnt(es,e=>lbl('projetos',e.projeto)||'(sem projeto)'))}${pie('Etapas por status',cnt(es,e=>e.status||'(sem status)'))}</div>`}
-function logView(){if(!podeVerLog())return; $('#body').innerHTML=db.log.length?`<div class="card tw"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>${db.log.map(l=>`<tr><td>${l.data}</td><td>${esc(l.usuario)}</td><td><span class="tag">${l.acao}</span></td><td>${l.entidade}</td><td>${esc(l.detalhe)}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Sem registros.</div>'}
+function logView(){if(!podeVerLog())return; $('#body').innerHTML=db.log.length?`<div class="card tw"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>${db.log.map(l=>`<tr><td>${esc(l.data)}</td><td>${esc(l.usuario)}</td><td><span class="tag">${esc(l.acao)}</span></td><td>${esc(l.entidade)}</td><td>${esc(l.detalhe)}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Sem registros.</div>'}
 function usersBody(b){const rows=db.usuarios.filter(u=>!q||JSON.stringify(u).toLowerCase().includes(q.toLowerCase()));
 b.innerHTML=rows.length?`<div class="card tw"><table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th></th></tr>${rows.map(u=>`<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${esc(PERFIS[u.perfil]||u.perfil)}</td><td><span class="tag ${u.ativo===false?'off':''}">${u.ativo===false?'Inativo':'Ativo'}</span></td><td class="a"><button class="btn s" data-e="${u.id}">Editar</button>${u.id===me.uid?'':`<button class="btn d" data-a="${u.id}">${u.ativo===false?'Ativar':'Inativar'}</button>`}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Nenhum usuário.</div>';
 b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>userForm(x.dataset.e));b.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>toggleUser(x.dataset.a))}
