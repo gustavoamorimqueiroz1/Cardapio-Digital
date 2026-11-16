@@ -100,7 +100,7 @@ usuarios:['Perfis e usuários',[['nome','Nome'],['email','E-mail'],['perfil','Pe
 tarefas:['Tarefas (Kanban)',[['titulo','Tarefa'],['projeto','Projeto','ref:projetos'],['responsavel','Responsável','ref:consultores'],['prazo','Prazo','date'],['prioridade','Prioridade','sel:Baixa|Média|Alta'],['status','Coluna','sel:A fazer|Em andamento|Revisão|Concluído']]],
 tabelas:['Tabelas dinâmicas',[['nome','Nome']]],boards:['Boards',[['nome','Nome']]]
 };
-const MENU=['clientes','empreendimentos','propostas','financeiro','projetos','etapas','indicadores','tarefas','consultores','orgaos','processos','vistorias','monitoramento','fornecedores','arquivos','tabelas'];
+const MENU=['clientes','empreendimentos','propostas','financeiro','projetos','etapas','indicadores','tarefas','consultores','orgaos','processos','vistorias','monitoramento','mtr','fornecedores','arquivos','tabelas'];
 const COLS=['A fazer','Em andamento','Revisão','Concluído'];
 
 /* ---- Firebase ---- */
@@ -184,12 +184,60 @@ if(!items.includes(cur))cur='clientes';
 const title=esc(lab(cur));
 a.innerHTML=`<aside id="sb"><div class="emp"><small>Empresa</small>${esc(me.empresaNome||EMP)}</div><div class="logo">in<b>sight</b><small>Consultoria ambiental · RJ</small></div><nav>${items.map(k=>`<a data-k="${k}" class="${k===cur?'on':''}">${esc(lab(k))}</a>`).join('')}</nav>
 <div class="me">${esc(me.nome)}<br>${esc(PERFIS[me.perfil]||me.perfil)} · <a href="#" id="pw2" style="color:var(--g)">senha</a> · <a href="#" id="out" style="color:var(--g)">sair</a></div></aside>
-<div id="menuBackdrop"></div><main><div class="top"><button class="btn s burger" id="bg">☰</button><h1>${title}</h1>${cur==='tabelas'?'<button class="btn" id="nt">Nova tabela</button>':cur!=='log'&&cur!=='config'&&cur!=='indicadores'?`<input id="q" placeholder="Buscar…" value="${esc(q)}"><button class="btn" id="new">Novo</button>`:''}</div><div id="body"></div><div id="appFooter"></div></main>`;
+<div id="menuBackdrop"></div><main><div class="top"><button class="btn s burger" id="bg">☰</button><h1>${title}</h1>${cur==='tabelas'?'<button class="btn" id="nt">Nova tabela</button>':cur!=='log'&&cur!=='config'&&cur!=='indicadores'&&cur!=='mtr'?`<input id="q" placeholder="Buscar…" value="${esc(q)}"><button class="btn" id="new">Novo</button>`:''}</div><div id="body"></div><div id="appFooter"></div></main>`;
 document.querySelectorAll('nav a').forEach(n=>n.onclick=()=>{cur=n.dataset.k;q='';render()});
 $('#out').onclick=e=>{e.preventDefault();sair().then(()=>loginView())};$('#pw2').onclick=e=>{e.preventDefault();pwdForm()};
 $('#bg').onclick=()=>{const open=$('#sb').classList.toggle('open');$('#menuBackdrop').classList.toggle('on',open)};$('#menuBackdrop').onclick=()=>{$('#sb').classList.remove('open');$('#menuBackdrop').classList.remove('on')};document.addEventListener('keydown',e=>{if(e.key==='Escape'){[...document.querySelectorAll('.modal')].pop()?.remove();$('#sb')?.classList.remove('open');$('#menuBackdrop')?.classList.remove('on')}});
-if(cur==='indicadores'){indView();renderFooter();return}if(cur==='tabelas'){tabView();renderFooter();return}if(cur==='config'){cfgView();renderFooter();return}if(cur==='log'){logView();renderFooter();return}
+if(cur==='indicadores'){indView();renderFooter();return}if(cur==='mtr'){mtrView();renderFooter();return}if(cur==='tabelas'){tabView();renderFooter();return}if(cur==='config'){cfgView();renderFooter();return}if(cur==='log'){logView();renderFooter();return}
 $('#new').onclick=()=>form(cur,null,cur==='tarefas'?{board:cb,status:bcols(cb)[0],prioridade:'Média'}:undefined);$('#q').oninput=e=>{q=e.target.value;body()};body();renderFooter()}
+
+// ---- Integração de consulta MTR-RJ (somente leitura)
+let mtrResultados=[];
+function mtrView(){
+ const b=$('#body');
+ b.innerHTML=`<div class="card" style="padding:18px;margin-bottom:14px">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2 style="margin:0 0 5px">Acompanhamento de MTRs · INEA/RJ</h2><div class="mu">Consulta de manifestos já emitidos. Esta tela não gera, altera, recebe ou cancela MTRs.</div></div><a href="https://mtr.inea.rj.gov.br/" target="_blank" rel="noopener" style="color:var(--g)">Abrir sistema INEA ↗</a></div>
+ <div class="fi" style="margin:12px 0">A consulta oficial do Web Service exige o código de barras de cada manifesto. Informe um ou mais códigos (um por linha), além das credenciais e dados da unidade cadastrada no INEA.</div>
+ <div class="pg" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:14px">
+ <div class="fl"><label>CPF do usuário (login INEA)</label><input id="mtrLogin" autocomplete="off" inputmode="numeric" placeholder="CPF do usuário"></div>
+ <div class="fl"><label>Senha do sistema MTR</label><input id="mtrSenha" type="password" autocomplete="new-password" placeholder="Senha INEA"></div>
+ <div class="fl"><label>CNPJ/CPF da unidade</label><input id="mtrCnpj" inputmode="numeric" placeholder="Documento da unidade"></div>
+ <div class="fl"><label>Código da unidade</label><input id="mtrUnidade" inputmode="numeric" placeholder="Código INEA"></div>
+ </div>
+ <div class="fl"><label>Código(s) de barras do(s) MTR(s) — um por linha</label><textarea id="mtrCodigos" rows="3" placeholder="Informe o código de barras completo de cada MTR"></textarea><div class="fi">O código de barras é composto pelo número do MTR (10 dígitos) + unidade geradora (8) + unidade transportadora (8) + unidade destinadora (8), totalizando 34 dígitos.</div></div>
+ <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" id="mtrBuscar">Consultar MTRs em andamento</button><button class="btn s" id="mtrLimpar">Limpar resultados</button><span class="mu" id="mtrMsg" role="status"></span></div>
+ </div><div id="mtrResultados"></div>
+ <div class="card" style="padding:14px;margin-top:14px"><b>Sobre a integração</b><p class="mu" style="margin:6px 0 0">O manual público do INEA documenta a consulta individual por código de barras (retornaManifesto). Ele não documenta uma operação para listar automaticamente todos os MTRs da unidade. Por isso, esta tela consulta os códigos informados e exibe somente os manifestos com situação ativa: “Salvo” ou “Em Armazenamento Temporário”.</p><p class="mu" style="margin:6px 0 0">As credenciais são usadas apenas durante a consulta e não são gravadas no Firebase nem no armazenamento local.</p></div>`;
+ $('#mtrLimpar').onclick=()=>{mtrResultados=[];$('#mtrResultados').innerHTML='';$('#mtrMsg').textContent='Resultados limpos.'};
+ $('#mtrBuscar').onclick=consultarMtrs;
+ if(mtrResultados.length)renderMtrResultados();
+}
+function fmtMtrDate(v){if(!v)return '—';const x=String(v);return /^\d{8}$/.test(x)?x.slice(6,8)+'/'+x.slice(4,6)+'/'+x.slice(0,4):esc(x)}
+function mtrStatus(v){const n=Number(v);return n===1?'Salvo · em andamento':n===9?'Em armazenamento temporário':n===3?'MTR recebido':n===4?'Cancelado':'Situação '+(v??'não informada')}
+async function consultarMtrs(){
+ const login=$('#mtrLogin').value.trim(),senha=$('#mtrSenha').value,cnp=$('#mtrCnpj').value.replace(/\D/g,''),unidade=$('#mtrUnidade').value.trim(),codigos=[...new Set($('#mtrCodigos').value.split(/[\n,;\s]+/).map(x=>x.replace(/\D/g,'')).filter(Boolean))],btn=$('#mtrBuscar'),msg=$('#mtrMsg');
+ if(!login||!senha||!cnp||!unidade)return msg.textContent='Preencha login, senha, documento e código da unidade.';
+ if(!codigos.length)return msg.textContent='Informe ao menos um código de barras.';
+ const invalidos=codigos.filter(c=>c.length!==34);if(invalidos.length)return msg.textContent='Confira os códigos: cada código de barras deve conter 34 dígitos.';
+ btn.disabled=true;btn.textContent='Consultando…';msg.textContent='';mtrResultados=[];$('#mtrResultados').innerHTML='';
+ const base='https://mtr.inea.rj.gov.br/api';
+ for(let i=0;i<codigos.length;i++){
+  msg.textContent=`Consultando ${i+1} de ${codigos.length}…`;
+  const parts=[login,senha,cnp,unidade,codigos[i]].map(encodeURIComponent);
+  try{
+   const resp=await fetch(`${base}/retornaManifesto/${parts.join('/')}`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+   const raw=await resp.text();let data;try{data=JSON.parse(raw)}catch{throw new Error('Resposta não reconhecida pelo serviço do INEA. Verifique se o acesso ao Web Service está disponível.')}
+   if(!resp.ok)throw new Error(data?.retorno||`Falha HTTP ${resp.status}`);
+   if(Number(data.retornoCodigo)===0||data.manifestoCodigo){const status=Number(data.situacaoManifestoCodigo);if([1,9].includes(status))mtrResultados.push({...data,_codigoBarras:codigos[i]});}
+   else mtrResultados.push({_codigoBarras:codigos[i],_erro:data.retorno||`Retorno INEA ${data.retornoCodigo??'indefinido'}`});
+  }catch(e){mtrResultados.push({_codigoBarras:codigos[i],_erro:e.message||'Falha de comunicação. Verifique conexão, CORS ou disponibilidade do INEA.'})}
+ }
+ renderMtrResultados();msg.textContent=`Consulta concluída: ${mtrResultados.filter(x=>!x._erro).length} MTR(s) em andamento encontrado(s), de ${codigos.length} código(s) consultado(s).`;
+ btn.disabled=false;btn.textContent='Consultar MTRs em andamento';
+}
+function renderMtrResultados(){const el=$('#mtrResultados');if(!el)return;const rows=mtrResultados.filter(x=>!x._erro),errs=mtrResultados.filter(x=>x._erro);
+ el.innerHTML=`<div class="kp"><div class="card"><b>${rows.length}</b>MTRs em andamento</div><div class="card"><b>${errs.length}</b>Falhas / não localizados</div></div>${rows.map(m=>`<div class="card" style="padding:16px;margin:0 0 12px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b style="font-size:18px">MTR nº ${esc(m.manifestoCodigo)}</b><div class="mu">Emitido em ${fmtMtrDate(m.manifData)} · Expedição ${fmtMtrDate(m.manifDataExpedicao)}</div></div><span class="tag">${esc(mtrStatus(m.situacaoManifestoCodigo))}</span></div><div class="pg" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin:14px 0"><div><small class="mu">Gerador</small><div>${esc(m.cnpGerador||'—')} · Unidade ${esc(m.codUnidadeGerador??'—')}</div></div><div><small class="mu">Transportador</small><div>${esc(m.cnpTransportador||'—')} · Unidade ${esc(m.codUnidadeTransportador??'—')}</div><div class="mu">Motorista: ${esc(m.manifTransportadorNomeMotorista||'—')} · Placa: ${esc(m.manifTransportadorPlacaVeiculo||'—')}</div></div><div><small class="mu">Destinador</small><div>${esc(m.cnpDestinador||'—')} · Unidade ${esc(m.codUnidadeDestinador??'—')}</div></div></div>${m.manifObservacao?`<div class="mu" style="margin-bottom:10px">Observação: ${esc(m.manifObservacao)}</div>`:''}<div class="tw"><table><tr><th>Resíduo (código IBAMA)</th><th>Quantidade</th><th>Classe</th><th>Tecnologia</th><th>Estado físico</th></tr>${(m.itemManifestoJSONS||m.itemManifestoJSONs||[]).map(it=>`<tr><td>${esc(it.residuo||'—')}</td><td>${esc(it.quantidade??'—')} · un. ${esc(it.codigoUnidade??'—')}</td><td>${esc(it.codigoClasse??'—')}</td><td>${esc(it.codigoTecnologia??'—')}</td><td>${esc(it.codigoTipoEstado??'—')}</td></tr>`).join('')||'<tr><td colspan="5">Sem itens detalhados no retorno.</td></tr>'}</table></div><div class="fi">Código consultado: ${esc(m._codigoBarras)}</div></div>`).join('')}${errs.map(e=>`<div class="card" style="padding:12px;margin:0 0 8px;border-color:var(--r)"><b>MTR não consultado</b><div class="mu">Código ${esc(e._codigoBarras)} · ${esc(e._erro)}</div></div>`).join('')}${!rows.length&&!errs.length?'<div class="card empty">Nenhum MTR em andamento foi localizado nos códigos informados.</div>':''}`;
+}
 
 function body(){const b=$('#body');if(cur==='tarefas')return kanban(b);if(cur==='usuarios')return usersBody(b);const fs=E[cur][1],cols=fs.filter(f=>f[2]!=='file').slice(0,5);
 const rows=db[cur].filter(r=>!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q.toLowerCase()));
@@ -237,7 +285,7 @@ if(c&&ev.type==='pointerup'&&t&&c.dataset.c!==col(t)){put('tarefas',{...t,status
 addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)})}
 let cb='',fl={p:'',sp:'',se:'',de:'',ate:''};
 const bcols=id=>{const b=db.boards.find(x=>x.id===id)||db.boards[0];return b?b.cols:COLS};
-const lab=k=>k==='log'?'Log e auditoria':k==='config'?'GitHub':k==='indicadores'?'Indicadores':E[k][0];
+const lab=k=>k==='log'?'Log e auditoria':k==='config'?'GitHub':k==='indicadores'?'Indicadores':k==='mtr'?'MTR · Acompanhamento':E[k][0];
 function ensureBoards(){if(me&&!db.boards.length&&!ensureBoards.t){ensureBoards.t=1;put('boards',{id:'b1',nome:'Quadro principal',cols:[...COLS]})}}
 function loadDyn(){Object.keys(E).filter(k=>k.startsWith('t_')).forEach(k=>{delete E[k];delete db[k]});db.tabelas.forEach(t=>{E['t_'+t.id]=[t.nome,(t.cols||[]).map(c=>[c.k,c.r,c.t||undefined])];db['t_'+t.id]=arr(DADOS[t.id])})}
 function boardForm(id){const bd=id?db.boards.find(x=>x.id===id):{nome:'',cols:['A fazer','Em andamento','Concluído']},m=document.createElement('div'),can=id&&db.boards.length>1;m.className='modal';
