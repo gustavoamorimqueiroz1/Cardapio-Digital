@@ -8,7 +8,7 @@
 button,input,select,textarea{font:inherit;color:var(--tx)}
 input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:9px 11px}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--g);outline-offset:1px}
-.btn{background:var(--g);color:#0d1f15;border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer}.btn:hover{background:var(--g2)}
+.btn{background:var(--g);color:#0d1f15;border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer}.btn:hover{background:var(--g2)}.btn:disabled{opacity:.6;cursor:not-allowed}
 .btn.s{background:var(--p2);color:var(--tx);font-weight:500;padding:6px 11px;border:1px solid var(--ln)}.btn.d{background:transparent;color:var(--r);border:1px solid var(--r);padding:6px 11px}
 aside{position:fixed;inset:0 auto 0 0;width:236px;background:var(--p);border-right:1px solid var(--ln);display:flex;flex-direction:column;z-index:5;transition:transform .2s}
 .logo{padding:20px 20px 14px;font-size:24px;font-weight:800;letter-spacing:-.5px}.logo b{color:var(--g)}.logo small{display:block;font-size:12px;font-weight:400;color:var(--mu);letter-spacing:0}
@@ -22,7 +22,8 @@ main{margin-left:236px;padding:26px 30px;min-height:100vh}
 .tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--ln);white-space:nowrap}
 th{color:var(--mu);font-weight:600;font-size:13px}tr:last-child td{border:0}td.a{text-align:right}td.a button{margin-left:6px}
 .empty{padding:40px;text-align:center;color:var(--mu)}
-.tag{background:rgba(47,191,113,.16);color:var(--g);padding:2px 9px;border-radius:99px;font-size:12px}
+.tag{background:rgba(47,191,113,.16);color:var(--g);padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.tag.off{background:rgba(229,83,75,.16);color:var(--r)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:20;padding:14px}
 .mb{background:var(--p);border:1px solid var(--ln);border-radius:14px;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:22px}
 .mb h2{margin:0 0 14px}.fl{margin-bottom:12px}.fl label{display:block;font-size:13px;color:var(--mu);margin-bottom:4px}.ft{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
@@ -33,7 +34,7 @@ th{color:var(--mu);font-weight:600;font-size:13px}tr:last-child td{border:0}td.a
 .tk.Alta{border-left-color:var(--r)}.tk.Média{border-left-color:#e0b43c}.tk small{color:var(--mu);display:block}
 .login{min-height:100vh;display:grid;place-items:center;padding:16px}.login .card{width:100%;max-width:380px;padding:30px}
 .login h1{margin:0 0 4px;font-size:34px;letter-spacing:-1px}.login h1 b{color:var(--g)}.login p{color:var(--mu);margin:0 0 20px}
-.err{color:var(--r);font-size:13px;min-height:18px}
+.err{color:var(--r);font-size:13px;min-height:18px;margin-bottom:8px}
 #toast{position:fixed;bottom:18px;right:18px;background:var(--g);color:#0d1f15;padding:10px 16px;border-radius:8px;font-weight:600;z-index:30;display:none}
 input[type=password],input[type=text]{color:var(--tx);-webkit-text-fill-color:var(--tx);caret-color:var(--tx)}
 input[type=password]{letter-spacing:2px;font-family:Arial,sans-serif}
@@ -58,9 +59,23 @@ input:-webkit-autofill{-webkit-text-fill-color:var(--tx);box-shadow:0 0 0 100px 
 .company .hero{max-width:1100px;margin:30px auto;padding:24px}.company .hero h1{font-size:clamp(30px,5vw,48px);line-height:1.1}.company .hero h1 span{color:var(--g)}.company .hero p{color:var(--mu);max-width:760px;font-size:17px}
 .company .slides{height:310px;position:relative;overflow:hidden;border-radius:18px;margin:24px 0;background:#111}.company .slide{position:absolute;inset:0;opacity:0;transition:opacity .7s}.company .slide.on{opacity:1}.company .slide img{width:100%;height:100%;object-fit:cover;filter:brightness(.48)}.company .slide div{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(20px,6vw,70px)}.company .slide h2{font-size:clamp(24px,4vw,38px);margin:0 0 8px;color:#fff}.company .slide p{color:#fff;margin:0;max-width:650px}.company .dots{position:absolute;bottom:14px;left:0;right:0;display:flex;gap:8px;justify-content:center}.company .dots button{width:9px;height:9px;border:0;border-radius:50%;padding:0;background:#fff8}.company .dots button.on{background:var(--g)}
 .company .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:24px 0}.company .feature{background:var(--p);border:1px solid var(--ln);border-radius:14px;padding:20px}.company .feature h3{color:var(--g);margin:0 0 8px}.company .feature p{color:var(--mu);margin:0}.company .cta{display:inline-block;background:var(--g);color:#102016;padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;margin-top:14px}
-.admin-wrap{max-width:1100px;margin:28px auto;padding:0 18px}.admin-wrap .card{padding:18px;margin:14px 0}.admin-wrap table{min-width:680px}.admin-wrap .company-group{margin:18px 0}.admin-wrap .company-group h3{color:var(--g)}
+
+/* Estilos exclusivos Superadmin */
+.sa-header{position:sticky;top:0;background:var(--p);padding:14px 22px;border-bottom:1px solid var(--ln);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;z-index:10}
+.sa-header b{font-size:18px}.sa-header b span{color:var(--g)}
+.admin-wrap{max-width:1100px;margin:28px auto;padding:0 18px}
+.admin-wrap .card{padding:18px;margin:14px 0}
+.admin-wrap table{min-width:680px}
+.admin-wrap .company-group{margin:18px 0}
+.admin-wrap .company-group h3{color:var(--g);margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.sa-toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.sa-toolbar input{max-width:300px}
+
 @media(max-width:820px){#menuBackdrop.on{display:block}.company .slides{height:250px}.company .hero{padding:14px}}
-.login-company-btn{display:block;text-align:center;margin-top:14px;padding:10px 14px;border:1px solid #fff;border-radius:9px;color:#fff;text-decoration:none;font-weight:700;transition:.2s}.login-company-btn:hover{background:#fff;color:#202629}.login-admin-btn{display:block;text-align:center;margin-top:10px;color:var(--mu);font-size:12px;text-decoration:underline}.terms-page{max-width:900px;margin:36px auto;padding:28px 22px}.terms-page h1{color:var(--g)}.terms-page h2{margin-top:28px;color:var(--g);font-size:20px}.terms-page p,.terms-page li{line-height:1.75;color:var(--tx)}.terms-page .muted{color:var(--mu)}
+.login-company-btn{display:block;text-align:center;margin-top:14px;padding:10px 14px;border:1px solid #fff;border-radius:9px;color:#fff;text-decoration:none;font-weight:700;transition:.2s}.login-company-btn:hover{background:#fff;color:#202629}
+.login-admin-btn{display:block;text-align:center;margin-top:12px;color:var(--mu);font-size:12px;text-decoration:underline;cursor:pointer;background:transparent;border:0;width:100%}
+.login-admin-btn:hover{color:var(--g)}
+.terms-page{max-width:900px;margin:36px auto;padding:28px 22px}.terms-page h1{color:var(--g)}.terms-page h2{margin-top:28px;color:var(--g);font-size:20px}.terms-page p,.terms-page li{line-height:1.75;color:var(--tx)}.terms-page .muted{color:var(--mu)}
 </style></head><body><div id="app"></div><div id="toast"></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -90,7 +105,8 @@ tabelas:['Tabelas dinâmicas',[['nome','Nome']]],boards:['Boards',[['nome','Nome
 };
 const MENU=['clientes','empreendimentos','propostas','financeiro','projetos','etapas','indicadores','tarefas','consultores','orgaos','processos','vistorias','monitoramento','fornecedores','arquivos','tabelas'];
 const COLS=['A fazer','Em andamento','Revisão','Concluído'];
-/* ---- Firebase: login por Authentication; dados em Realtime Database em empresas/{empresa}/{tabela}/{id} */
+
+/* ---- Firebase ---- */
 const firebaseConfig={apiKey:"AIzaSyBSG5VhSKUbHJ0UMkuBQPDJQhucdgY_ipQ",authDomain:"insight-5189f.firebaseapp.com",databaseURL:"https://insight-5189f-default-rtdb.firebaseio.com",projectId:"insight-5189f",storageBucket:"insight-5189f.firebasestorage.app",messagingSenderId:"858268463882",appId:"1:858268463882:web:5f2b2dd9f0a680a10600f3"};
 firebase.initializeApp(firebaseConfig);
 const fb={auth:firebase.auth(),db:firebase.database()};
@@ -111,11 +127,17 @@ const put=(ent,r)=>R(P(ent)+'/'+r.id).set(limpo(r)).catch(fail);
 const rem=(ent,id)=>R(P(ent)+'/'+id).remove().catch(fail);
 const log=(acao,ent,det)=>me?R('log').push({data:new Date().toLocaleString('pt-BR'),ts:Date.now(),usuario:me.email,acao,entidade:ent,detalhe:String(det??'')}).catch(()=>{}):Promise.resolve();
 function erroAuth(e){const c=(e&&e.code)||'';if(['auth/invalid-credential','auth/user-not-found','auth/wrong-password','auth/invalid-email'].includes(c))return'E-mail ou senha incorretos.';if(c==='auth/user-disabled')return'Usuário inativo. Fale com o administrador.';if(c==='auth/too-many-requests')return'Muitas tentativas. Aguarde alguns minutos.';if(c==='auth/network-request-failed')return'Sem conexão. Verifique sua internet.';return'Erro ao realizar o login. Tente novamente.'}
-async function montar(u){const p=(await fb.db.ref('perfis/'+u.uid).get()).val();
-if(!p||p.perfil==='superadmin')return{erro:p?'E-mail ou senha incorretos.':'Usuário sem empresa vinculada. Fale com o administrador.'};
-if(!p.empresa)return{erro:'Usuário sem empresa vinculada. Fale com o administrador.'};
-if(p.ativo!==true)return{erro:'Usuário inativo. Fale com o administrador.'};
-EMP=String(p.empresa).trim().toLowerCase();return{user:{uid:u.uid,email:p.email||u.email,nome:p.nome||u.email,empresa:EMP,perfil:p.perfil||'cliente'}}}
+
+/* Verificação de acesso na tela principal (bloqueia se ativo !== true ou se for superadmin) */
+async function montar(u){
+  const p=(await fb.db.ref('perfis/'+u.uid).get()).val();
+  if(!p||p.perfil==='superadmin')return{erro:p?'Use o painel de Acesso Superadmin para entrar com esta conta.':'Usuário sem empresa vinculada. Fale com o administrador.'};
+  if(!p.empresa)return{erro:'Usuário sem empresa vinculada. Fale com o administrador.'};
+  if(p.ativo!==true)return{erro:'Usuário inativo. Fale com o administrador.'};
+  EMP=String(p.empresa).trim().toLowerCase();
+  return{user:{uid:u.uid,email:p.email||u.email,nome:p.nome||u.email,empresa:EMP,perfil:p.perfil||'cliente'}}
+}
+
 async function sair(){LS.forEach(r=>r.off());LS=[];clearInterval(tmr);try{await fb.auth.signOut()}catch(e){}localStorage.removeItem(TS);me=null;EMP='';DADOS={};Object.keys(E).forEach(k=>db[k]=[]);db.log=[]}
 function listen(){return new Promise((ok,no)=>{let n=0,bad=false;const tot=TB.length+1+(adm()?1:0);
 const on=(ref,fn)=>{let f=0;LS.push(ref);ref.on('value',s=>{fn(s.val());if(!f){f=1;if(++n===tot)ok()}else refresh()},e=>{if(!bad){bad=true;no(e)}})};
@@ -127,19 +149,31 @@ try{if(!(await R('info').get()).val())throw 0;await listen();ensureBoards();cur=
 tmr=setInterval(()=>{const t=+localStorage.getItem(TS)||0;if(t&&Date.now()-t>=SESSAO_MIN*60000)sair().then(()=>loginView('Sua sessão expirou após 60 minutos. Entre novamente.'))},30000)}
 catch(e){await sair();loginView('Não foi possível carregar os dados da empresa. Tente novamente.')}}
 function refresh(){if(!me)return;clearTimeout(pend);pend=setTimeout(()=>{if(document.querySelector('.modal'))return refresh();ensureBoards();const a=document.activeElement;if(a&&a.id==='q')body();else render()},200)}
-function loginView(m,ok){$('#app').innerHTML=`<div class="login"><div><div class="card"><div style="text-align:center;margin-bottom:18px"><img src="img/img2.png" alt="Logo da empresa" style="max-width:220px;max-height:100px;object-fit:contain;border-radius:16px" onerror="this.style.display='none'"></div>
+
+/* Tela de Login Principal */
+function loginView(m,ok){
+  $('#app').innerHTML=`<div class="login"><div><div class="card"><div style="text-align:center;margin-bottom:18px"><img src="img/img2.png" alt="Logo da empresa" style="max-width:220px;max-height:100px;object-fit:contain;border-radius:16px" onerror="this.style.display='none'"></div>
 <div class="fl"><label>E-mail</label><input id="em" type="email" autocomplete="username"></div><div class="fl"><label>Senha</label><div class="pwb"><input id="pw" type="password" autocomplete="current-password"><button type="button" id="eye">mostrar</button></div></div>
+<div class="err" id="er" ${ok?'style="color:var(--g)"':''}>${esc(m||'')}</div><button class="btn" style="width:100%" id="go">Entrar</button><p style="margin:14px 0 0;text-align:center"><a href="#" id="fg" style="color:var(--g)">Esqueci minha senha</a></p><a class="login-company-btn" href="?pagina=empresa" target="_blank" rel="noopener">Acessar nossa página</a></div></div></div>`;
+  $('#eye').onclick=()=>{const p=$('#pw'),h=p.type==='password';p.type=h?'text':'password';$('#eye').textContent=h?'ocultar':'mostrar';p.focus()};
+  $('#fg').onclick=e=>{e.preventDefault();forgotView()};
 
-<div class="err" id="er" ${ok?'style="color:var(--g)"':''}>${esc(m||'')}</div><button class="btn" style="width:100%" id="go">Entrar</button><p style="margin:14px 0 0;text-align:center"><a href="#" id="fg" style="color:var(--g)">Esqueci minha senha</a></p><a class="login-company-btn" href="?pagina=empresa" target="_blank" rel="noopener">Acessar nossa página</a><a class="login-admin-btn" href="/admin" id="openSuperadmin">Acesso Superadmin</a></div></div></div>`;
-$('#eye').onclick=()=>{const p=$('#pw'),h=p.type==='password';p.type=h?'text':'password';$('#eye').textContent=h?'ocultar':'mostrar';p.focus()};
-$('#fg').onclick=e=>{e.preventDefault();forgotView()};
-const saLink=$('#openSuperadmin');if(saLink){const base=location.pathname.replace(/\/$/,'');saLink.href=(base||'')+'/admin';saLink.addEventListener('click',e=>{e.preventDefault();const target=(location.origin+(base||'')+'/admin');window.location.assign(target)})}
+  /* Redirecionamento direto e seguro para a tela de login Superadmin */
+  const saLink=$('#openSuperadmin');
+  if(saLink){
+    saLink.addEventListener('click',e=>{
+      e.preventDefault();
+      irParaSuperadmin();
+    });
+  }
 
-const go=async()=>{const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value,e=$('#er'),b=$('#go');e.style.color='';e.textContent='';if(!em||!pw)return e.textContent='Informe e-mail e senha.';b.disabled=true;b.textContent='Verificando...';
-try{const Pe=firebase.auth.Auth.Persistence;await fb.auth.setPersistence(Pe.SESSION);const c=await fb.auth.signInWithEmailAndPassword(em,pw),r=await montar(c.user);
-if(r.erro){await sair();return loginView(r.erro)}me=r.user;cur='clientes';q='';localStorage.setItem(TS,Date.now());start()}
-catch(x){await sair();e.textContent=erroAuth(x);b.disabled=false;b.textContent='Entrar'}};
-$('#go').onclick=go;$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('#em').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pw').focus()})}
+  const go=async()=>{const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value,e=$('#er'),b=$('#go');e.style.color='';e.textContent='';if(!em||!pw)return e.textContent='Informe e-mail e senha.';b.disabled=true;b.textContent='Verificando...';
+  try{const Pe=firebase.auth.Auth.Persistence;await fb.auth.setPersistence(Pe.SESSION);const c=await fb.auth.signInWithEmailAndPassword(em,pw),r=await montar(c.user);
+  if(r.erro){await sair();return loginView(r.erro)}me=r.user;cur='clientes';q='';localStorage.setItem(TS,Date.now());start()}
+  catch(x){await sair();e.textContent=erroAuth(x);b.disabled=false;b.textContent='Entrar'}};
+  $('#go').onclick=go;$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});$('#em').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pw').focus()})
+}
+
 function forgotView(){$('#app').innerHTML=`<div class="login"><div class="card"><h1>in<b>sight</b></h1><p>Informe seu e-mail para receber o link de nova senha.</p><div class="fl"><label>E-mail</label><input id="fe" type="email"></div><div class="err" id="er"></div><button class="btn" style="width:100%" id="fs">Enviar link</button><p style="margin:14px 0 0;text-align:center"><a href="#" id="fv" style="color:var(--g)">Voltar</a></p></div></div>`;
 $('#fv').onclick=e=>{e.preventDefault();loginView()};
 $('#fs').onclick=async()=>{const em=$('#fe').value.trim().toLowerCase(),e=$('#er');e.style.color='';if(!em)return e.textContent='Informe seu e-mail.';
@@ -148,6 +182,7 @@ try{await fb.auth.sendPasswordResetEmail(em);e.style.color='var(--g)';e.textCont
 // ---- helpers
 const lbl=(ent,id)=>{const r=(db[ent]||[]).find(x=>x.id===id);return r?r[E[ent][1][0][0]]:''};
 const cell=(f,v)=>f[2]&&f[2].startsWith('ref:')?esc(lbl(f[2].slice(4),v)):f[2]&&f[2].startsWith('sel:')&&f[0]=='status'?`<span class="tag">${esc(v)}</span>`:f[2]==='num'&&f[0]==='valor'&&v!==''&&v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2}):esc(v);
+
 // ---- views
 function render(){const a=$('#app');if(!me)return loginView();
 const items=MENU.flatMap(k=>k==='tabelas'?[k,...db.tabelas.map(t=>'t_'+t.id)]:[k]);
@@ -161,6 +196,7 @@ $('#out').onclick=e=>{e.preventDefault();sair().then(()=>loginView())};$('#pw2')
 $('#bg').onclick=()=>{const open=$('#sb').classList.toggle('open');$('#menuBackdrop').classList.toggle('on',open)};$('#menuBackdrop').onclick=()=>{$('#sb').classList.remove('open');$('#menuBackdrop').classList.remove('on')};document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#sb')?.classList.remove('open');$('#menuBackdrop')?.classList.remove('on')}});
 if(cur==='indicadores'){indView();renderFooter();return}if(cur==='tabelas'){tabView();renderFooter();return}if(cur==='config'){cfgView();renderFooter();return}if(cur==='log'){logView();renderFooter();return}
 $('#new').onclick=()=>form(cur,null,cur==='tarefas'?{board:cb,status:bcols(cb)[0],prioridade:'Média'}:undefined);$('#q').oninput=e=>{q=e.target.value;body()};body();renderFooter()}
+
 function body(){const b=$('#body');if(cur==='tarefas')return kanban(b);if(cur==='usuarios')return usersBody(b);const fs=E[cur][1],cols=fs.slice(0,5);
 const rows=db[cur].filter(r=>!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q.toLowerCase()));
 b.innerHTML=rows.length?`<div class="card tw"><table><tr>${cols.map(f=>`<th>${f[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(f=>`<td>${cell(f,r[f[0]])}</td>`).join('')}<td class="a"><button class="btn s" data-e="${r.id}">Editar</button><button class="btn d" data-d="${r.id}">Excluir</button></td></tr>`).join('')}</table></div>`:`<div class="card empty">Nenhum registro ainda. Use “Novo” para cadastrar.</div>`;
@@ -232,7 +268,6 @@ b.innerHTML=rows.length?`<div class="card tw"><table><tr><th>Nome</th><th>E-mail
 b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>userForm(x.dataset.e));b.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>toggleUser(x.dataset.a))}
 async function toggleUser(id){const u=db.usuarios.find(x=>x.id===id);if(!u||!adm())return;const a=u.ativo===false;
 try{await fb.db.ref('perfis/'+id+'/ativo').set(a);await R('usuarios/'+id+'/ativo').set(a);log(a?'Ativação':'Inativação','usuarios',u.email);toast(a?'Usuário ativado':'Usuário inativado')}catch(e){fail(e)}}
-/* cria a conta no Authentication por um app secundário, para não derrubar a sessão do administrador */
 async function criarAuth(email){const app=firebase.initializeApp(firebaseConfig,'sec'+Date.now());
 try{const A='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789',pw=Array.from(crypto.getRandomValues(new Uint8Array(20)),x=>A[x%A.length]).join('');
 const c=await app.auth().createUserWithEmailAndPassword(email,pw);await app.auth().signOut();return c.user.uid}finally{app.delete()}}
@@ -249,7 +284,7 @@ document.body.appendChild(m);m.querySelector('#c').onclick=()=>m.remove();
 m.querySelector('#s').onclick=async()=>{const a=m.querySelector('#p1').value,n=m.querySelector('#p2').value,e=m.querySelector('#pe');if(!a)return e.textContent='Informe a senha atual.';if(n.length<6)return e.textContent='A nova senha precisa ter pelo menos 6 caracteres.';
 try{const u=fb.auth.currentUser;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,a));await u.updatePassword(n);m.remove();toast('Senha alterada')}catch(x){e.textContent=['auth/invalid-credential','auth/wrong-password'].includes(x.code)?'Senha atual incorreta.':'Falha ao alterar a senha.'}}}
 
-// Site institucional da consultoria ambiental
+// Site institucional
 let companySlide=0,companySlideTimer;
 function companyPage(){
   document.body.innerHTML=`<div class="company"><header><b>in<span>sight</span></b></header><section class="hero"><h1>Consultoria ambiental com <span>visão estratégica</span> e compromisso com o futuro.</h1><p>A INSIGHT apoia empresas na gestão ambiental, no licenciamento e na condução técnica de projetos, conectando conformidade, planejamento e sustentabilidade.</p><div class="slides" id="companySlides">
@@ -268,29 +303,432 @@ function companyPage(){
   companySlide=0;clearInterval(companySlideTimer);const move=n=>{companySlide=(n+3)%3;document.querySelectorAll('.company .slide').forEach((x,i)=>x.classList.toggle('on',i===companySlide));document.querySelectorAll('.company .dots button').forEach((x,i)=>x.classList.toggle('on',i===companySlide))};document.querySelectorAll('.company .dots button').forEach(x=>x.onclick=()=>move(+x.dataset.slide));companySlideTimer=setInterval(()=>move(companySlide+1),5000);
 }
 
-// Documentos institucionais: termos de uso, privacidade e informações sobre LGPD.
+// Documentos institucionais
 function termsPage(kind='termos'){const docs={
 termos:{title:'Termos de Uso',body:`<h2>1. Sobre a plataforma</h2><p>O INSIGHT é uma plataforma de apoio à gestão de consultorias e atividades ambientais, incluindo organização de clientes, empreendimentos, projetos, processos, documentos, tarefas, monitoramentos e indicadores.</p><h2>2. Acesso e responsabilidades</h2><p>O acesso é destinado a usuários autorizados pela organização contratante. Cada usuário deve manter suas credenciais em sigilo, utilizar senhas seguras e comunicar imediatamente qualquer suspeita de acesso indevido. As ações realizadas com uma conta são atribuídas a essa conta.</p><h2>3. Uso adequado</h2><p>O usuário compromete-se a inserir informações verdadeiras e lícitas, respeitar direitos de terceiros e não tentar acessar dados, contas ou áreas para as quais não tenha autorização. É proibido utilizar a plataforma para atividades ilícitas, comprometer sua disponibilidade ou contornar controles de segurança.</p><h2>4. Dados e conteúdo</h2><p>A organização cliente é responsável pela legitimidade, qualidade e atualização dos dados que cadastra e pelos perfis e permissões que concede aos seus colaboradores. O cliente deve possuir base legal adequada para inserir dados pessoais de terceiros.</p><h2>5. Disponibilidade e alterações</h2><p>São adotadas medidas razoáveis para manter a plataforma disponível e segura. Podem ocorrer interrupções para manutenção, atualização, correção ou por eventos externos. Funcionalidades podem evoluir, preservadas as obrigações contratuais e legais aplicáveis.</p><h2>6. Suspensão e encerramento</h2><p>O acesso poderá ser suspenso diante de uso indevido, risco à segurança, inadimplência quando aplicável ou determinação legal/contratual. O encerramento e a exportação ou eliminação de dados devem observar o contrato celebrado e a legislação aplicável.</p><h2>7. Contato</h2><p>Solicitações relacionadas à conta, uso ou suporte devem ser encaminhadas pelos canais oficiais informados pela empresa responsável pela contratação.</p>`},
 privacidade:{title:'Política de Privacidade',body:`<h2>1. Quais dados podem ser tratados</h2><p>A plataforma pode tratar dados de cadastro e autenticação (nome, e-mail, empresa e perfil de acesso), informações inseridas nos módulos, arquivos anexados, registros técnicos de operação e dados necessários ao suporte e à segurança.</p><h2>2. Finalidades</h2><p>Os dados são utilizados para autenticar usuários, disponibilizar as funcionalidades contratadas, organizar informações ambientais e administrativas, controlar permissões, manter a integridade dos registros, prestar suporte, prevenir fraudes e cumprir obrigações legais.</p><h2>3. Compartilhamento</h2><p>O INSIGHT não comercializa dados pessoais nem os compartilha com terceiros para publicidade. O tratamento pode envolver fornecedores de infraestrutura e tecnologia estritamente necessários à hospedagem, autenticação, armazenamento, segurança e operação da plataforma, como serviços de nuvem, sempre limitado à finalidade contratada e sujeito às salvaguardas aplicáveis. Dados também poderão ser fornecidos quando houver obrigação legal, ordem válida de autoridade ou necessidade de exercício regular de direitos.</p><h2>4. Armazenamento e segurança</h2><p>São utilizados controles de autenticação, permissões por empresa e perfil, regras de acesso ao banco de dados e medidas técnicas e organizacionais destinadas a reduzir riscos de acesso não autorizado, perda, alteração ou divulgação indevida. Nenhum sistema conectado à internet pode garantir segurança absoluta.</p><h2>5. Retenção e eliminação</h2><p>Os dados são mantidos pelo período necessário à prestação do serviço, às finalidades informadas e ao cumprimento de obrigações legais ou contratuais. Após esse período, poderão ser eliminados ou anonimizados, ressalvadas hipóteses legítimas de conservação.</p><h2>6. Direitos dos titulares</h2><p>O titular pode solicitar, nos termos da legislação, confirmação do tratamento, acesso, correção, anonimização, bloqueio, eliminação quando cabível, portabilidade, informação sobre compartilhamentos e revisão de decisões automatizadas quando aplicável. A solicitação poderá exigir validação de identidade.</p><h2>7. Atualizações</h2><p>Esta política poderá ser atualizada para refletir mudanças legais, técnicas ou operacionais. A versão vigente ficará disponível nesta página.</p>`},
 lgpd:{title:'Privacidade e LGPD',body:`<h2>1. Compromisso com a LGPD</h2><p>O tratamento de dados pessoais realizado por meio do INSIGHT deve observar a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais – LGPD), incluindo os princípios da finalidade, adequação, necessidade, transparência, segurança, prevenção e responsabilização.</p><h2>2. Papéis no tratamento</h2><p>Em regra, a organização cliente define as finalidades e os meios essenciais do tratamento dos dados pessoais que cadastra na plataforma, atuando como controladora. O fornecedor do INSIGHT poderá atuar como operador desses dados, conforme as instruções e o contrato aplicável. Para dados tratados para administrar a própria relação comercial, segurança e suporte, o fornecedor poderá atuar como controlador, conforme o caso concreto.</p><h2>3. Bases legais e minimização</h2><p>A organização cliente deve assegurar uma base legal adequada para cada operação de tratamento e cadastrar apenas os dados necessários à finalidade pretendida. O sistema não deve ser utilizado para armazenar dados pessoais excessivos ou sem justificativa.</p><h2>4. Segurança e incidentes</h2><p>São adotadas medidas técnicas e administrativas proporcionais aos riscos para proteger dados pessoais. Suspeitas de incidente devem ser comunicadas sem demora pelos canais de suporte, para avaliação, contenção e adoção das providências cabíveis, inclusive comunicações legalmente exigidas.</p><h2>5. Solicitações dos titulares</h2><p>Pedidos de titulares devem ser encaminhados à organização responsável pelo tratamento. Quando o fornecedor atuar como operador, apoiará o cliente, dentro das possibilidades técnicas e contratuais, no atendimento das solicitações.</p><h2>6. Transferência e fornecedores</h2><p>O uso de provedores de infraestrutura pode envolver processamento ou armazenamento em ambientes operados por fornecedores especializados, inclusive fora do país, conforme a configuração dos serviços contratados. Quando aplicável, deverão ser observados os requisitos legais para transferência internacional e as salvaguardas pertinentes.</p><h2>7. Canal de contato</h2><p>Para dúvidas ou solicitações sobre privacidade e proteção de dados, utilize o canal de contato informado pela organização contratante ou pelo fornecedor do INSIGHT.</p>`}};const d=docs[kind]||docs.termos;$('#app').innerHTML=`<main class="terms-page"><a href="javascript:window.close()" class="muted">Fechar esta aba</a><h1>${d.title}</h1><p class="muted">Última atualização: 16 de novembro de 2026</p>${d.body}<p class="muted">Este texto é informativo e deve ser ajustado aos contratos, fornecedores, práticas efetivas e canais oficiais do operador da plataforma antes da publicação como documento jurídico definitivo.</p></main>`}
 
-// Painel exclusivo do superadmin: usuários agrupados por empresa.
-let SA={profiles:{},companies:[]};
-function adminRoute(){return /\/admin\/?$/.test(location.pathname)||new URLSearchParams(location.search).get('pagina')==='admin'}
-function adminLoginView(msg=''){$('#app').innerHTML=`<div class="login"><div><div class="card"><h1>in<b>sight</b></h1><p>Painel do proprietário · Superadmin</p><div class="fl"><label>E-mail</label><input id="saEmail" type="email" autocomplete="username"></div><div class="fl"><label>Senha</label><input id="saPass" type="password" autocomplete="current-password"></div><div class="err" id="saError">${esc(msg)}</div><button class="btn" id="saEnter" style="width:100%">Entrar</button></div></div></div>`;const go=async()=>{const b=$('#saEnter'),e=$('#saError');b.disabled=true;e.textContent='';try{await fb.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);const c=await fb.auth.signInWithEmailAndPassword($('#saEmail').value.trim().toLowerCase(),$('#saPass').value);const p=(await fb.db.ref('perfis/'+c.user.uid).get()).val();if(!p||p.perfil!=='superadmin'||p.ativo===false){await fb.auth.signOut();throw new Error('Acesso permitido somente ao perfil superadmin.')}await adminUsersHome()}catch(x){e.textContent=x.message||erroAuth(x);b.disabled=false}};$('#saEnter').onclick=go;$('#saPass').onkeydown=e=>{if(e.key==='Enter')go()}}
-async function adminUsersHome(){
-  $('#app').innerHTML='<div class="login"><p>Carregando usuários...</p></div>';
-  try{const raw=(await fb.db.ref('perfis').get()).val()||{};SA.profiles=raw;const ids=[...new Set(Object.values(raw).filter(x=>x&&x.perfil!=='superadmin'&&x.empresa).map(x=>String(x.empresa).trim().toLowerCase()))];SA.companies=await Promise.all(ids.map(async id=>{let info={};try{info=(await fb.db.ref('empresas/'+id+'/info').get()).val()||{}}catch(e){}return{id,nome:info.nome||id,users:Object.entries(raw).filter(([uid,p])=>p&&p.perfil!=='superadmin'&&String(p.empresa||'').trim().toLowerCase()===id).map(([uid,p])=>({...p,uid}))}}));adminUsersRender()}catch(e){$('#app').innerHTML=`<div class="admin-wrap"><div class="card"><h2>Não foi possível listar os usuários</h2><p>Verifique as regras do Realtime Database para permitir que o perfil superadmin leia /perfis e /empresas.</p><button class="btn" onclick="adminUsersHome()">Tentar novamente</button><button class="btn s" onclick="adminSair()">Sair</button></div></div>`}}
-function adminUsersRender(){const groups=SA.companies.map(c=>`<section class="card company-group"><h3>${esc(c.nome)} <small class="mu">(${c.users.length} usuários)</small></h3><div class="tw"><table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th></th></tr>${c.users.map(u=>`<tr><td>${esc(u.nome||'—')}</td><td>${esc(u.email||'—')}</td><td>${esc(PERFIS[u.perfil]||u.perfil||'—')}</td><td><span class="tag">${u.ativo===false?'Inativo':'Ativo'}</span></td><td><button class="btn s" onclick="adminToggleUser('${esc(u.uid)}')">${u.ativo===false?'Ativar':'Inativar'}</button></td></tr>`).join('')||'<tr><td colspan="5">Nenhum usuário vinculado.</td></tr>'}</table></div></section>`).join('');$('#app').innerHTML=`<header style="position:sticky;top:0;background:var(--p);padding:14px 20px;border-bottom:1px solid var(--ln);display:flex;justify-content:space-between;align-items:center"><b>Painel Superadmin · INSIGHT</b><div><button class="btn" id="saNew">Criar usuário</button> <button class="btn s" id="saOut">Sair</button></div></header><div class="admin-wrap"><h1>Usuários por empresa</h1><p class="mu">Visão global dos usuários cadastrados na plataforma.</p>${groups||'<div class="card empty">Nenhum usuário encontrado.</div>'}</div>`;$('#saNew').onclick=adminUserForm;$('#saOut').onclick=adminSair}
-async function adminToggleUser(uid){const p=SA.profiles[uid];if(!p)return;const active=p.ativo===false;try{await fb.db.ref('perfis/'+uid+'/ativo').set(active);const emp=String(p.empresa||'').trim().toLowerCase();if(emp)await fb.db.ref('empresas/'+emp+'/usuarios/'+uid+'/ativo').set(active);await adminUsersHome()}catch(e){alert('Não foi possível alterar o status. Verifique as regras do Firebase.')}}
-async function createAuthSecondary(email){const app=firebase.initializeApp(firebaseConfig,'superadmin-'+Date.now());try{const chars='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';const pw=Array.from(crypto.getRandomValues(new Uint8Array(22)),x=>chars[x%chars.length]).join('');const cred=await app.auth().createUserWithEmailAndPassword(email,pw);return cred.user.uid}finally{await app.delete()}}
-function adminUserForm(){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="mb"><h2>Novo usuário da plataforma</h2><div class="fl"><label>Empresa (chave cadastrada no Firebase)</label><input id="saCompany" placeholder="ex.: empresa-x" list="saCompanies"><datalist id="saCompanies">${SA.companies.map(c=>`<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('')}</datalist></div><div class="fl"><label>Nome</label><input id="saName"></div><div class="fl"><label>E-mail</label><input id="saMail" type="email"></div><div class="fl"><label>Perfil</label><select id="saRole">${Object.entries(PERFIS).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></div><p class="mu">Será criada uma conta de acesso e enviado um e-mail para definir a senha.</p><div class="err" id="saFormErr"></div><div class="ft"><button class="btn s" id="saCancel">Cancelar</button><button class="btn" id="saSave">Criar usuário</button></div></div>`;document.body.appendChild(m);m.querySelector('#saCancel').onclick=()=>m.remove();m.querySelector('#saSave').onclick=async()=>{const empresa=m.querySelector('#saCompany').value.trim().toLowerCase(),nome=m.querySelector('#saName').value.trim(),email=m.querySelector('#saMail').value.trim().toLowerCase(),perfil=m.querySelector('#saRole').value,er=m.querySelector('#saFormErr'),b=m.querySelector('#saSave');if(!empresa||!nome||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return er.textContent='Informe empresa, nome e e-mail válido.';b.disabled=true;try{const uid=await createAuthSecondary(email),d={nome,email,perfil,empresa,ativo:true};await fb.db.ref('perfis/'+uid).set(d);await fb.db.ref('empresas/'+empresa+'/usuarios/'+uid).set({...d,id:uid});try{await fb.auth.sendPasswordResetEmail(email)}catch(e){}m.remove();await adminUsersHome()}catch(e){er.textContent=e.code==='auth/email-already-in-use'?'Este e-mail já possui cadastro.':e.message||'Não foi possível criar o usuário.';b.disabled=false}}}
-function adminSair(){fb.auth.signOut().finally(()=>{if(adminRoute())adminLoginView();else loginView()})}
+/* ============================================================================
+   MÓDULO SUPERADMIN (REFEITO DO ZERO)
+   ============================================================================ */
+let SA={profiles:{},companies:[],user:null,filtro:''};
 
+function isSuperadminRoute(){
+  return /\/admin\/?$/.test(location.pathname)
+      || new URLSearchParams(location.search).get('pagina')==='admin'
+      || location.hash==='#admin';
+}
 
-(async()=>{const page=new URLSearchParams(location.search).get('pagina');if(page==='termos'||page==='privacidade'||page==='lgpd')return termsPage(page);if(page==='empresa'||location.hash==='#empresa')return companyPage();if(adminRoute())return adminLoginView();$('#app').innerHTML='<div class="login"><p class="mu">Carregando…</p></div>';
-const u=await new Promise(r=>{const o=fb.auth.onAuthStateChanged(x=>{o();r(x)})}),ts=+localStorage.getItem(TS)||0;
-if(u&&ts&&Date.now()-ts>=SESSAO_MIN*60000){await sair();return loginView('Sua sessão expirou após 60 minutos. Entre novamente.')}
-if(u){try{const r=await montar(u);if(r.user){me=r.user;cur='clientes';q='';if(!ts)localStorage.setItem(TS,Date.now());return start()}}catch(e){}await sair()}
-loginView()})();
+function irParaSuperadmin(){
+  const url=new URL(location.href);
+  url.searchParams.set('pagina','admin');
+  history.pushState({pagina:'admin'},'',url.toString());
+  saLoginView();
+}
+
+function voltarParaLoginPrincipal(){
+  const url=new URL(location.href);
+  url.searchParams.delete('pagina');
+  if(url.hash==='#admin')url.hash='';
+  history.pushState({},'',url.toString());
+  loginView();
+}
+
+window.addEventListener('popstate',()=>{
+  if(isSuperadminRoute()){
+    if(SA.user)saCarregarUsuarios();
+    else saLoginView();
+  }else{
+    SA.user=null;
+    if(me)render();
+    else loginView();
+  }
+});
+
+/* 1. Tela de Login do Superadmin */
+function saLoginView(msg=''){
+  $('#app').innerHTML=`
+    <div class="login">
+      <div>
+        <div class="card">
+          <h1>in<b>sight</b></h1>
+          <p>Acesso restrito · Superadmin</p>
+          <div class="fl">
+            <label>E-mail do Superadmin</label>
+            <input id="saEmail" type="email" autocomplete="username" placeholder="superadmin@insight.com.br">
+          </div>
+          <div class="fl">
+            <label>Senha</label>
+            <div class="pwb">
+              <input id="saPass" type="password" autocomplete="current-password">
+              <button type="button" id="saEye">mostrar</button>
+            </div>
+          </div>
+          <div class="err" id="saError">${esc(msg)}</div>
+          <button class="btn" id="saEnter" style="width:100%">Entrar no Painel Superadmin</button>          
+        </div>
+      </div>
+    </div>
+  `;
+
+  $('#saEye').onclick=()=>{
+    const p=$('#saPass'),h=p.type==='password';
+    p.type=h?'text':'password';
+    $('#saEye').textContent=h?'ocultar':'mostrar';
+    p.focus();
+  };
+
+  $('#saBackLogin').onclick=()=>voltarParaLoginPrincipal();
+
+  const autenticarSuperadmin=async()=>{
+    const email=$('#saEmail').value.trim().toLowerCase();
+    const senha=$('#saPass').value;
+    const err=$('#saError');
+    const btn=$('#saEnter');
+
+    err.textContent='';
+    if(!email||!senha){
+      err.textContent='Informe o e-mail e a senha.';
+      return;
+    }
+
+    btn.disabled=true;
+    btn.textContent='Autenticando...';
+
+    try{
+      await fb.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+      const cred=await fb.auth.signInWithEmailAndPassword(email,senha);
+      const snap=await fb.db.ref('perfis/'+cred.user.uid).get();
+      const perfil=snap.val();
+
+      if(!perfil || perfil.perfil!=='superadmin'){
+        await fb.auth.signOut();
+        throw new Error('Acesso negado: esta conta não possui perfil superadmin.');
+      }
+      if(perfil.ativo===false){
+        await fb.auth.signOut();
+        throw new Error('Conta de superadmin inativa.');
+      }
+
+      SA.user={uid:cred.user.uid,email:perfil.email||cred.user.email,nome:perfil.nome||'Superadmin'};
+      await saCarregarUsuarios();
+    }catch(e){
+      err.textContent=e.code?erroAuth(e):(e.message||'Não foi possível autenticar.');
+      btn.disabled=false;
+      btn.textContent='Entrar no Painel Superadmin';
+    }
+  };
+
+  $('#saEnter').onclick=autenticarSuperadmin;
+  $('#saPass').addEventListener('keydown',e=>{if(e.key==='Enter')autenticarSuperadmin()});
+  $('#saEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('#saPass').focus()});
+}
+
+/* 2. Carregamento dos usuários agrupados por empresa */
+async function saCarregarUsuarios(){
+  $('#app').innerHTML='<div class="login"><p class="mu">Carregando usuários por empresa…</p></div>';
+  try{
+    const raw=(await fb.db.ref('perfis').get()).val()||{};
+    SA.profiles=raw;
+
+    const empresaIds=[...new Set(
+      Object.values(raw)
+        .filter(x=>x&&x.perfil!=='superadmin'&&x.empresa)
+        .map(x=>String(x.empresa).trim().toLowerCase())
+    )].sort();
+
+    SA.companies=await Promise.all(empresaIds.map(async id=>{
+      let info={};
+      try{
+        info=(await fb.db.ref('empresas/'+id+'/info').get()).val()||{};
+      }catch(e){}
+
+      const users=Object.entries(raw)
+        .filter(([uid,p])=>p&&p.perfil!=='superadmin'&&String(p.empresa||'').trim().toLowerCase()===id)
+        .map(([uid,p])=>({...p,uid}))
+        .sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||'')));
+
+      return{id,nome:info.nome||id,users};
+    }));
+
+    saRenderUsuarios();
+  }catch(e){
+    $('#app').innerHTML=`
+      <div class="admin-wrap">
+        <div class="card">
+          <h2>Erro ao carregar usuários</h2>
+          <p class="mu">Verifique se o seu usuário possui permissão de leitura em <code>/perfis</code> e <code>/empresas</code> no Firebase Realtime Database.</p>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn" id="saRetry">Tentar novamente</button>
+            <button class="btn s" id="saLogoutErr">Sair</button>
+          </div>
+        </div>
+      </div>
+    `;
+    $('#saRetry').onclick=()=>saCarregarUsuarios();
+    $('#saLogoutErr').onclick=()=>saSair();
+  }
+}
+
+/* 3. Renderização do Painel de Usuários por Empresa */
+function saRenderUsuarios(){
+  const termo=SA.filtro.trim().toLowerCase();
+
+  const gruposFiltrados=SA.companies.map(c=>{
+    const users=c.users.filter(u=>{
+      if(!termo)return true;
+      return String(c.nome+' '+c.id+' '+(u.nome||'')+' '+(u.email||'')+' '+(u.perfil||'')).toLowerCase().includes(termo);
+    });
+    return{...c,users};
+  }).filter(c=>!termo||c.users.length>0);
+
+  const htmlGrupos=gruposFiltrados.map(c=>`
+    <section class="card company-group">
+      <h3>
+        <span>Empresa: ${esc(c.nome)} <small class="mu">(chave: ${esc(c.id)})</small></span>
+        <small class="mu">${c.users.length} usuário(s)</small>
+      </h3>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Perfil</th>
+              <th>Status</th>
+              <th style="text-align:right">Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${c.users.length?c.users.map(u=>{
+              const ativo=u.ativo===true;
+              return`
+                <tr>
+                  <td>${esc(u.nome||'—')}</td>
+                  <td>${esc(u.email||'—')}</td>
+                  <td>${esc(PERFIS[u.perfil]||u.perfil||'—')}</td>
+                  <td><span class="tag ${ativo?'':'off'}">${ativo?'Ativo':'Inativo'}</span></td>
+                  <td class="a">
+                    <button class="btn ${ativo?'d':'s'}" data-sa-toggle="${esc(u.uid)}">
+                      ${ativo?'Inativar':'Ativar'}
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join(''):'<tr><td colspan="5" class="mu">Nenhum usuário vinculado a esta empresa.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  `).join('');
+
+  $('#app').innerHTML=`
+    <header class="sa-header">
+      <b>in<span>sight</span> · Painel Superadmin</b>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="mu" style="font-size:13px">${esc(SA.user?.email||'')}</span>
+        <button class="btn" id="saNewUser">+ Criar usuário</button>
+        <button class="btn s" id="saOut">Sair</button>
+      </div>
+    </header>
+    <div class="admin-wrap">
+      <div class="sa-toolbar">
+        <div>
+          <h1 style="margin:0;font-size:26px">Usuários por empresa</h1>
+          <p class="mu" style="margin:4px 0 0">Usuários inativados são bloqueados imediatamente no login principal.</p>
+        </div>
+        <input id="saSearch" type="text" placeholder="Filtrar empresa, nome ou e-mail…" value="${esc(SA.filtro)}">
+      </div>
+      ${htmlGrupos||'<div class="card empty">Nenhum usuário encontrado. Clique em “+ Criar usuário” para cadastrar.</div>'}
+    </div>
+  `;
+
+  $('#saNewUser').onclick=()=>saAbrirModalCriarUsuario();
+  $('#saOut').onclick=()=>saSair();
+
+  const searchInput=$('#saSearch');
+  searchInput.oninput=e=>{
+    SA.filtro=e.target.value;
+    const pos=searchInput.selectionStart;
+    saRenderUsuarios();
+    const novoInput=$('#saSearch');
+    if(novoInput){novoInput.focus();novoInput.setSelectionRange(pos,pos);}
+  };
+
+  document.querySelectorAll('[data-sa-toggle]').forEach(btn=>{
+    btn.onclick=()=>saAlternarStatusUsuario(btn.dataset.saToggle);
+  });
+}
+
+/* 4. Inativar / Ativar usuário (bloqueia login na aplicação principal) */
+async function saAlternarStatusUsuario(targetUid){
+  const p=SA.profiles[targetUid];
+  if(!p)return;
+  const novoStatus=p.ativo!==true; // se estava ativo (true), passa a false; se inativo, passa a true
+
+  try{
+    await fb.db.ref('perfis/'+targetUid+'/ativo').set(novoStatus);
+    const emp=String(p.empresa||'').trim().toLowerCase();
+    if(emp){
+      await fb.db.ref('empresas/'+emp+'/usuarios/'+targetUid+'/ativo').set(novoStatus);
+    }
+    toast(novoStatus?'Usuário ativado com sucesso.':'Usuário inativado. Acesso principal bloqueado.');
+    await saCarregarUsuarios();
+  }catch(e){
+    fail(e);
+  }
+}
+
+/* 5. Criar novo usuário via instância secundária do Firebase Auth */
+async function saCriarContaAuth(email,senhaInicial){
+  const app=firebase.initializeApp(firebaseConfig,'sa-create-'+Date.now());
+  try{
+    const cred=await app.auth().createUserWithEmailAndPassword(email,senhaInicial);
+    await app.auth().signOut();
+    return cred.user.uid;
+  }finally{
+    await app.delete();
+  }
+}
+
+function saAbrirModalCriarUsuario(){
+  const m=document.createElement('div');
+  m.className='modal';
+  m.innerHTML=`
+    <div class="mb">
+      <h2>Novo usuário por empresa</h2>
+      <div class="fl">
+        <label>Chave da empresa (ex.: insight, empresa-rj)</label>
+        <input id="saCompany" placeholder="Digite ou selecione a empresa" list="saCompaniesList">
+        <datalist id="saCompaniesList">
+          ${SA.companies.map(c=>`<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('')}
+        </datalist>
+      </div>
+      <div class="fl">
+        <label>Nome completo</label>
+        <input id="saName" placeholder="Nome do usuário">
+      </div>
+      <div class="fl">
+        <label>E-mail de acesso</label>
+        <input id="saMail" type="email" placeholder="usuario@empresa.com.br">
+      </div>
+      <div class="fl">
+        <label>Senha inicial (opcional — se vazio, envia link de criação por e-mail)</label>
+        <input id="saInitPass" type="text" placeholder="Mínimo 6 caracteres (ou deixe em branco)">
+      </div>
+      <div class="fl">
+        <label>Perfil de acesso</label>
+        <select id="saRole">
+          ${Object.entries(PERFIS).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="err" id="saFormErr"></div>
+      <div class="ft">
+        <button type="button" class="btn s" id="saCancel">Cancelar</button>
+        <button type="button" class="btn" id="saSave">Criar usuário</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+
+  m.querySelector('#saCancel').onclick=()=>m.remove();
+  m.querySelector('#saSave').onclick=async()=>{
+    const empresa=m.querySelector('#saCompany').value.trim().toLowerCase();
+    const nome=m.querySelector('#saName').value.trim();
+    const email=m.querySelector('#saMail').value.trim().toLowerCase();
+    const senhaDigitada=m.querySelector('#saInitPass').value.trim();
+    const perfil=m.querySelector('#saRole').value;
+    const er=m.querySelector('#saFormErr');
+    const b=m.querySelector('#saSave');
+
+    er.textContent='';
+    if(!empresa||!nome||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      er.textContent='Preencha empresa, nome e um e-mail válido.';
+      return;
+    }
+    if(senhaDigitada && senhaDigitada.length<6){
+      er.textContent='A senha inicial deve ter no mínimo 6 caracteres.';
+      return;
+    }
+
+    b.disabled=true;
+    b.textContent='Criando...';
+
+    try{
+      const chars='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const senhaAleatoria=Array.from(crypto.getRandomValues(new Uint8Array(20)),x=>chars[x%chars.length]).join('');
+      const senhaFinal=senhaDigitada||senhaAleatoria;
+
+      const novoUid=await saCriarContaAuth(email,senhaFinal);
+      const dadosPerfil={nome,email,perfil,empresa,ativo:true};
+
+      await fb.db.ref('perfis/'+novoUid).set(dadosPerfil);
+      await fb.db.ref('empresas/'+empresa+'/usuarios/'+novoUid).set({...dadosPerfil,id:novoUid});
+
+      // Garante que o nó info da empresa exista caso seja uma empresa nova
+      const infoSnap=await fb.db.ref('empresas/'+empresa+'/info').get();
+      if(!infoSnap.exists()){
+        await fb.db.ref('empresas/'+empresa+'/info').set({nome:empresa});
+      }
+
+      if(!senhaDigitada){
+        try{await fb.auth.sendPasswordResetEmail(email)}catch(e){}
+      }
+
+      m.remove();
+      toast(senhaDigitada?'Usuário criado com sucesso!':'Usuário criado e e-mail de definição de senha enviado!');
+      await saCarregarUsuarios();
+    }catch(e){
+      er.textContent=e.code==='auth/email-already-in-use'
+        ?'Este e-mail já está cadastrado no sistema.'
+        :(e.message||'Não foi possível criar o usuário.');
+      b.disabled=false;
+      b.textContent='Criar usuário';
+    }
+  };
+}
+
+async function saSair(){
+  SA={profiles:{},companies:[],user:null,filtro:''};
+  try{await fb.auth.signOut()}catch(e){}
+  saLoginView();
+}
+
+/* ============================================================================
+   INICIALIZAÇÃO DA APLICAÇÃO
+   ============================================================================ */
+(async()=>{
+  const page=new URLSearchParams(location.search).get('pagina');
+  if(page==='termos'||page==='privacidade'||page==='lgpd')return termsPage(page);
+  if(page==='empresa'||location.hash==='#empresa')return companyPage();
+
+  if(isSuperadminRoute()){
+    $('#app').innerHTML='<div class="login"><p class="mu">Verificando sessão Superadmin…</p></div>';
+    const u=await new Promise(r=>{const o=fb.auth.onAuthStateChanged(x=>{o();r(x)})});
+    if(u){
+      try{
+        const p=(await fb.db.ref('perfis/'+u.uid).get()).val();
+        if(p&&p.perfil==='superadmin'&&p.ativo!==false){
+          SA.user={uid:u.uid,email:p.email||u.email,nome:p.nome||'Superadmin'};
+          return saCarregarUsuarios();
+        }
+      }catch(e){}
+      try{await fb.auth.signOut()}catch(e){}
+    }
+    return saLoginView();
+  }
+
+  $('#app').innerHTML='<div class="login"><p class="mu">Carregando…</p></div>';
+  const u=await new Promise(r=>{const o=fb.auth.onAuthStateChanged(x=>{o();r(x)})}),ts=+localStorage.getItem(TS)||0;
+  if(u&&ts&&Date.now()-ts>=SESSAO_MIN*60000){await sair();return loginView('Sua sessão expirou após 60 minutos. Entre novamente.')}
+  if(u){
+    try{
+      const r=await montar(u);
+      if(r.user){me=r.user;cur='clientes';q='';if(!ts)localStorage.setItem(TS,Date.now());return start()}
+    }catch(e){}
+    await sair();
+  }
+  loginView();
+})();
 </script></body></html>
