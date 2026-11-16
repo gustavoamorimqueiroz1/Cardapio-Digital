@@ -60,7 +60,6 @@ input:-webkit-autofill{-webkit-text-fill-color:var(--tx);box-shadow:0 0 0 100px 
 .company .slides{height:310px;position:relative;overflow:hidden;border-radius:18px;margin:24px 0;background:#111}.company .slide{position:absolute;inset:0;opacity:0;transition:opacity .7s}.company .slide.on{opacity:1}.company .slide img{width:100%;height:100%;object-fit:cover;filter:brightness(.48)}.company .slide div{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(20px,6vw,70px)}.company .slide h2{font-size:clamp(24px,4vw,38px);margin:0 0 8px;color:#fff}.company .slide p{color:#fff;margin:0;max-width:650px}.company .dots{position:absolute;bottom:14px;left:0;right:0;display:flex;gap:8px;justify-content:center}.company .dots button{width:9px;height:9px;border:0;border-radius:50%;padding:0;background:#fff8}.company .dots button.on{background:var(--g)}
 .company .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:24px 0}.company .feature{background:var(--p);border:1px solid var(--ln);border-radius:14px;padding:20px}.company .feature h3{color:var(--g);margin:0 0 8px}.company .feature p{color:var(--mu);margin:0}.company .cta{display:inline-block;background:var(--g);color:#102016;padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;margin-top:14px}
 
-/* Estilos exclusivos Superadmin */
 .sa-header{position:sticky;top:0;background:var(--p);padding:14px 22px;border-bottom:1px solid var(--ln);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;z-index:10}
 .sa-header b{font-size:18px}.sa-header b span{color:var(--g)}
 .admin-wrap{max-width:1100px;margin:28px auto;padding:0 18px}
@@ -73,8 +72,6 @@ input:-webkit-autofill{-webkit-text-fill-color:var(--tx);box-shadow:0 0 0 100px 
 
 @media(max-width:820px){#menuBackdrop.on{display:block}.company .slides{height:250px}.company .hero{padding:14px}}
 .login-company-btn{display:block;text-align:center;margin-top:14px;padding:10px 14px;border:1px solid #fff;border-radius:9px;color:#fff;text-decoration:none;font-weight:700;transition:.2s}.login-company-btn:hover{background:#fff;color:#202629}
-.login-admin-btn{display:block;text-align:center;margin-top:12px;color:var(--mu);font-size:12px;text-decoration:underline;cursor:pointer;background:transparent;border:0;width:100%}
-.login-admin-btn:hover{color:var(--g)}
 .terms-page{max-width:900px;margin:36px auto;padding:28px 22px}.terms-page h1{color:var(--g)}.terms-page h2{margin-top:28px;color:var(--g);font-size:20px}.terms-page p,.terms-page li{line-height:1.75;color:var(--tx)}.terms-page .muted{color:var(--mu)}
 </style></head><body><div id="app"></div><div id="toast"></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -115,6 +112,7 @@ const SESSAO_MIN=60,TS='amb_login_ts',TB=Object.keys(E).filter(k=>!k.startsWith(
 let db={},me=null,cur='clientes',q='',EMP='',DADOS={},LS=[],tmr,pend;
 Object.keys(E).forEach(k=>db[k]=[]);db.log=[];
 const adm=()=>me&&me.perfil==='admin';
+const podeVerLog=()=>me&&(me.perfil==='admin'||me.perfil==='superadmin');
 const R=p=>fb.db.ref('empresas/'+EMP+'/'+p);
 const limpo=v=>JSON.parse(JSON.stringify(v===undefined?null:v));
 const arr=o=>o?Object.entries(o).filter(([,v])=>v&&typeof v==='object').map(([id,v])=>({...v,id})):[];
@@ -128,10 +126,9 @@ const rem=(ent,id)=>R(P(ent)+'/'+id).remove().catch(fail);
 const log=(acao,ent,det)=>me?R('log').push({data:new Date().toLocaleString('pt-BR'),ts:Date.now(),usuario:me.email,acao,entidade:ent,detalhe:String(det??'')}).catch(()=>{}):Promise.resolve();
 function erroAuth(e){const c=(e&&e.code)||'';if(['auth/invalid-credential','auth/user-not-found','auth/wrong-password','auth/invalid-email'].includes(c))return'E-mail ou senha incorretos.';if(c==='auth/user-disabled')return'Usuário inativo. Fale com o administrador.';if(c==='auth/too-many-requests')return'Muitas tentativas. Aguarde alguns minutos.';if(c==='auth/network-request-failed')return'Sem conexão. Verifique sua internet.';return'Erro ao realizar o login. Tente novamente.'}
 
-/* Verificação de acesso na tela principal (bloqueia se ativo !== true ou se for superadmin) */
 async function montar(u){
   const p=(await fb.db.ref('perfis/'+u.uid).get()).val();
-  if(!p||p.perfil==='superadmin')return{erro:p?'Use o painel de Acesso Superadmin para entrar com esta conta.':'Usuário sem empresa vinculada. Fale com o administrador.'};
+  if(!p||p.perfil==='superadmin')return{erro:p?'E-mail ou senha incorretos.':'Usuário sem empresa vinculada. Fale com o administrador.'};
   if(!p.empresa)return{erro:'Usuário sem empresa vinculada. Fale com o administrador.'};
   if(p.ativo!==true)return{erro:'Usuário inativo. Fale com o administrador.'};
   EMP=String(p.empresa).trim().toLowerCase();
@@ -139,33 +136,27 @@ async function montar(u){
 }
 
 async function sair(){LS.forEach(r=>r.off());LS=[];clearInterval(tmr);try{await fb.auth.signOut()}catch(e){}localStorage.removeItem(TS);me=null;EMP='';DADOS={};Object.keys(E).forEach(k=>db[k]=[]);db.log=[]}
-function listen(){return new Promise((ok,no)=>{let n=0,bad=false;const tot=TB.length+1+(adm()?1:0);
+
+function listen(){return new Promise((ok,no)=>{let n=0,bad=false;const tot=TB.length+1+(podeVerLog()?1:0);
 const on=(ref,fn)=>{let f=0;LS.push(ref);ref.on('value',s=>{fn(s.val());if(!f){f=1;if(++n===tot)ok()}else refresh()},e=>{if(!bad){bad=true;no(e)}})};
 TB.forEach(k=>on(R(k),v=>{db[k]=arr(v);if(k==='tabelas')loadDyn()}));
 on(R('dados'),v=>{DADOS=v||{};loadDyn()});
-if(adm())on(R('log').limitToLast(300),v=>{db.log=arr(v).sort((a,b)=>a.id<b.id?1:-1)})})}
+if(podeVerLog())on(R('log').limitToLast(300),v=>{db.log=arr(v).sort((a,b)=>a.id<b.id?1:-1)})})}
+
 async function start(){$('#app').innerHTML='<div class="login"><p class="mu">Carregando…</p></div>';
 try{if(!(await R('info').get()).val())throw 0;await listen();ensureBoards();cur='clientes';q='';render();
 tmr=setInterval(()=>{const t=+localStorage.getItem(TS)||0;if(t&&Date.now()-t>=SESSAO_MIN*60000)sair().then(()=>loginView('Sua sessão expirou após 60 minutos. Entre novamente.'))},30000)}
 catch(e){await sair();loginView('Não foi possível carregar os dados da empresa. Tente novamente.')}}
+
 function refresh(){if(!me)return;clearTimeout(pend);pend=setTimeout(()=>{if(document.querySelector('.modal'))return refresh();ensureBoards();const a=document.activeElement;if(a&&a.id==='q')body();else render()},200)}
 
-/* Tela de Login Principal */
+/* Tela de Login Principal (sem botão Superadmin) */
 function loginView(m,ok){
   $('#app').innerHTML=`<div class="login"><div><div class="card"><div style="text-align:center;margin-bottom:18px"><img src="img/img2.png" alt="Logo da empresa" style="max-width:220px;max-height:100px;object-fit:contain;border-radius:16px" onerror="this.style.display='none'"></div>
 <div class="fl"><label>E-mail</label><input id="em" type="email" autocomplete="username"></div><div class="fl"><label>Senha</label><div class="pwb"><input id="pw" type="password" autocomplete="current-password"><button type="button" id="eye">mostrar</button></div></div>
 <div class="err" id="er" ${ok?'style="color:var(--g)"':''}>${esc(m||'')}</div><button class="btn" style="width:100%" id="go">Entrar</button><p style="margin:14px 0 0;text-align:center"><a href="#" id="fg" style="color:var(--g)">Esqueci minha senha</a></p><a class="login-company-btn" href="?pagina=empresa" target="_blank" rel="noopener">Acessar nossa página</a></div></div></div>`;
   $('#eye').onclick=()=>{const p=$('#pw'),h=p.type==='password';p.type=h?'text':'password';$('#eye').textContent=h?'ocultar':'mostrar';p.focus()};
   $('#fg').onclick=e=>{e.preventDefault();forgotView()};
-
-  /* Redirecionamento direto e seguro para a tela de login Superadmin */
-  const saLink=$('#openSuperadmin');
-  if(saLink){
-    saLink.addEventListener('click',e=>{
-      e.preventDefault();
-      irParaSuperadmin();
-    });
-  }
 
   const go=async()=>{const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value,e=$('#er'),b=$('#go');e.style.color='';e.textContent='';if(!em||!pw)return e.textContent='Informe e-mail e senha.';b.disabled=true;b.textContent='Verificando...';
   try{const Pe=firebase.auth.Auth.Persistence;await fb.auth.setPersistence(Pe.SESSION);const c=await fb.auth.signInWithEmailAndPassword(em,pw),r=await montar(c.user);
@@ -185,7 +176,10 @@ const cell=(f,v)=>f[2]&&f[2].startsWith('ref:')?esc(lbl(f[2].slice(4),v)):f[2]&&
 
 // ---- views
 function render(){const a=$('#app');if(!me)return loginView();
-const items=MENU.flatMap(k=>k==='tabelas'?[k,...db.tabelas.map(t=>'t_'+t.id)]:[k]);
+const items=[
+  ...MENU.flatMap(k=>k==='tabelas'?[k,...db.tabelas.map(t=>'t_'+t.id)]:[k]),
+  ...(podeVerLog()?['log']:[])
+];
 if(!items.includes(cur))cur='clientes';
 const title=esc(lab(cur));
 a.innerHTML=`<aside id="sb"><div class="logo">in<b>sight</b><small>Consultoria ambiental · RJ</small></div><nav>${items.map(k=>`<a data-k="${k}" class="${k===cur?'on':''}">${esc(lab(k))}</a>`).join('')}</nav>
@@ -262,9 +256,9 @@ function indRes(){const f=fl,pf=f.p||f.sp,ef=f.se||f.de||f.ate,ps=db.projetos.fi
 const es=db.etapas.filter(e=>(!pf||ids.has(e.projeto))&&(!f.se||e.status===f.se)&&(!f.de||(e.prazo&&e.prazo>=f.de))&&(!f.ate||(e.prazo&&e.prazo<=f.ate)));
 const pj=ef?ps.filter(p=>es.some(e=>e.projeto===p.id)):ps,cnt=(a,fn)=>{const m={};a.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)+1});return Object.entries(m)};
 $('#ir').innerHTML=`<div class="kp"><div class="card"><b>${pj.length}</b>Projetos</div><div class="card"><b>${es.length}</b>Etapas</div><div class="card"><b>${es.filter(e=>e.status==='Concluída').length}</b>Etapas concluídas</div></div><div class="pg">${pie('Projetos por status',cnt(pj,p=>p.status||'(sem status)'))}${pie('Etapas por projeto',cnt(es,e=>lbl('projetos',e.projeto)||'(sem projeto)'))}${pie('Etapas por status',cnt(es,e=>e.status||'(sem status)'))}</div>`}
-function logView(){$('#body').innerHTML=db.log.length?`<div class="card tw"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>${db.log.map(l=>`<tr><td>${l.data}</td><td>${esc(l.usuario)}</td><td><span class="tag">${l.acao}</span></td><td>${l.entidade}</td><td>${esc(l.detalhe)}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Sem registros.</div>'}
+function logView(){if(!podeVerLog())return; $('#body').innerHTML=db.log.length?`<div class="card tw"><table><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>${db.log.map(l=>`<tr><td>${l.data}</td><td>${esc(l.usuario)}</td><td><span class="tag">${l.acao}</span></td><td>${l.entidade}</td><td>${esc(l.detalhe)}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Sem registros.</div>'}
 function usersBody(b){const rows=db.usuarios.filter(u=>!q||JSON.stringify(u).toLowerCase().includes(q.toLowerCase()));
-b.innerHTML=rows.length?`<div class="card tw"><table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th></th></tr>${rows.map(u=>`<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${esc(PERFIS[u.perfil]||u.perfil)}</td><td><span class="tag">${u.ativo===false?'Inativo':'Ativo'}</span></td><td class="a"><button class="btn s" data-e="${u.id}">Editar</button>${u.id===me.uid?'':`<button class="btn d" data-a="${u.id}">${u.ativo===false?'Ativar':'Inativar'}</button>`}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Nenhum usuário.</div>';
+b.innerHTML=rows.length?`<div class="card tw"><table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th></th></tr>${rows.map(u=>`<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${esc(PERFIS[u.perfil]||u.perfil)}</td><td><span class="tag ${u.ativo===false?'off':''}">${u.ativo===false?'Inativo':'Ativo'}</span></td><td class="a"><button class="btn s" data-e="${u.id}">Editar</button>${u.id===me.uid?'':`<button class="btn d" data-a="${u.id}">${u.ativo===false?'Ativar':'Inativar'}</button>`}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Nenhum usuário.</div>';
 b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>userForm(x.dataset.e));b.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>toggleUser(x.dataset.a))}
 async function toggleUser(id){const u=db.usuarios.find(x=>x.id===id);if(!u||!adm())return;const a=u.ativo===false;
 try{await fb.db.ref('perfis/'+id+'/ativo').set(a);await R('usuarios/'+id+'/ativo').set(a);log(a?'Ativação':'Inativação','usuarios',u.email);toast(a?'Usuário ativado':'Usuário inativado')}catch(e){fail(e)}}
@@ -310,27 +304,19 @@ privacidade:{title:'Política de Privacidade',body:`<h2>1. Quais dados podem ser
 lgpd:{title:'Privacidade e LGPD',body:`<h2>1. Compromisso com a LGPD</h2><p>O tratamento de dados pessoais realizado por meio do INSIGHT deve observar a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais – LGPD), incluindo os princípios da finalidade, adequação, necessidade, transparência, segurança, prevenção e responsabilização.</p><h2>2. Papéis no tratamento</h2><p>Em regra, a organização cliente define as finalidades e os meios essenciais do tratamento dos dados pessoais que cadastra na plataforma, atuando como controladora. O fornecedor do INSIGHT poderá atuar como operador desses dados, conforme as instruções e o contrato aplicável. Para dados tratados para administrar a própria relação comercial, segurança e suporte, o fornecedor poderá atuar como controlador, conforme o caso concreto.</p><h2>3. Bases legais e minimização</h2><p>A organização cliente deve assegurar uma base legal adequada para cada operação de tratamento e cadastrar apenas os dados necessários à finalidade pretendida. O sistema não deve ser utilizado para armazenar dados pessoais excessivos ou sem justificativa.</p><h2>4. Segurança e incidentes</h2><p>São adotadas medidas técnicas e administrativas proporcionais aos riscos para proteger dados pessoais. Suspeitas de incidente devem ser comunicadas sem demora pelos canais de suporte, para avaliação, contenção e adoção das providências cabíveis, inclusive comunicações legalmente exigidas.</p><h2>5. Solicitações dos titulares</h2><p>Pedidos de titulares devem ser encaminhados à organização responsável pelo tratamento. Quando o fornecedor atuar como operador, apoiará o cliente, dentro das possibilidades técnicas e contratuais, no atendimento das solicitações.</p><h2>6. Transferência e fornecedores</h2><p>O uso de provedores de infraestrutura pode envolver processamento ou armazenamento em ambientes operados por fornecedores especializados, inclusive fora do país, conforme a configuração dos serviços contratados. Quando aplicável, deverão ser observados os requisitos legais para transferência internacional e as salvaguardas pertinentes.</p><h2>7. Canal de contato</h2><p>Para dúvidas ou solicitações sobre privacidade e proteção de dados, utilize o canal de contato informado pela organização contratante ou pelo fornecedor do INSIGHT.</p>`}};const d=docs[kind]||docs.termos;$('#app').innerHTML=`<main class="terms-page"><a href="javascript:window.close()" class="muted">Fechar esta aba</a><h1>${d.title}</h1><p class="muted">Última atualização: 16 de novembro de 2026</p>${d.body}<p class="muted">Este texto é informativo e deve ser ajustado aos contratos, fornecedores, práticas efetivas e canais oficiais do operador da plataforma antes da publicação como documento jurídico definitivo.</p></main>`}
 
 /* ============================================================================
-   MÓDULO SUPERADMIN (BLINDADO COM DIAGNÓSTICO DE ERRO)
+   MÓDULO SUPERADMIN
    ============================================================================ */
-let SA = { profiles: {}, companies: [], user: null, filtro: '' };
+let SA={profiles:{},companies:[],user:null,filtro:'',tab:'usuarios',logsEmp:{}};
 
-function isSuperadminRoute() {
+function isSuperadminRoute(){
   return /\/admin\/?$/.test(location.pathname)
-      || new URLSearchParams(location.search).get('pagina') === 'admin'
-      || location.hash === '#admin';
+      || new URLSearchParams(location.search).get('pagina')==='admin'
+      || location.hash==='#admin';
 }
 
-function voltarParaLoginPrincipal() {
-  const url = new URL(location.href);
-  url.searchParams.delete('pagina');
-  if (url.hash === '#admin') url.hash = '';
-  history.pushState({}, '', url.toString());
-  loginView();
-}
-
-/* 1. Tela de Login do Superadmin */
-function saLoginView(msg = '') {
-  $('#app').innerHTML = `
+/* 1. Tela de Login do Superadmin (sem botão de voltar para o login principal) */
+function saLoginView(msg=''){
+  $('#app').innerHTML=`
     <div class="login">
       <div>
         <div class="card">
@@ -349,92 +335,75 @@ function saLoginView(msg = '') {
           </div>
           <div class="err" id="saError" style="margin-bottom:10px;white-space:pre-wrap">${esc(msg)}</div>
           <button type="button" class="btn" id="saEnter" style="width:100%">Entrar no Painel Superadmin</button>
-          <button type="button" class="login-admin-btn" id="saBackLogin">← Voltar para o login principal</button>
         </div>
       </div>
     </div>
   `;
 
-  $('#saEye').onclick = () => {
-    const p = $('#saPass'), h = p.type === 'password';
-    p.type = h ? 'text' : 'password';
-    $('#saEye').textContent = h ? 'ocultar' : 'mostrar';
+  $('#saEye').onclick=()=>{
+    const p=$('#saPass'),h=p.type==='password';
+    p.type=h?'text':'password';
+    $('#saEye').textContent=h?'ocultar':'mostrar';
     p.focus();
   };
 
-  $('#saBackLogin').onclick = () => voltarParaLoginPrincipal();
+  const autenticarSuperadmin=async()=>{
+    const email=$('#saEmail').value.trim().toLowerCase();
+    const senha=$('#saPass').value;
+    const err=$('#saError');
+    const btn=$('#saEnter');
 
-  const autenticarSuperadmin = async () => {
-    const email = $('#saEmail').value.trim().toLowerCase();
-    const senha = $('#saPass').value;
-    const err = $('#saError');
-    const btn = $('#saEnter');
-
-    err.style.color = 'var(--r)';
-    err.textContent = '';
-
-    if (!email || !senha) {
-      err.textContent = 'Informe o e-mail e a senha.';
+    err.style.color='var(--r)';
+    err.textContent='';
+    if(!email||!senha){
+      err.textContent='Informe o e-mail e a senha.';
       return;
     }
 
-    btn.disabled = true;
-    btn.textContent = 'Autenticando...';
+    btn.disabled=true;
+    btn.textContent='Autenticando...';
 
-    try {
+    try{
       await fb.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-      const cred = await fb.auth.signInWithEmailAndPassword(email, senha);
-      const uidLogado = cred.user.uid;
+      const cred=await fb.auth.signInWithEmailAndPassword(email,senha);
+      const uidLogado=cred.user.uid;
 
-      btn.textContent = 'Verificando permissão...';
-      const snap = await fb.db.ref('perfis/' + uidLogado).get();
-      const perfil = snap.val();
+      btn.textContent='Verificando permissão...';
+      const snap=await fb.db.ref('perfis/'+uidLogado).get();
+      const perfil=snap.val();
 
-      if (!perfil) {
+      if(!perfil){
         await fb.auth.signOut();
-        throw new Error('Perfil não encontrado no banco para o UID: ' + uidLogado);
+        throw new Error('Perfil não encontrado no banco para o UID: '+uidLogado);
       }
-      if (perfil.perfil !== 'superadmin') {
+      if(perfil.perfil!=='superadmin'){
         await fb.auth.signOut();
-        throw new Error('Acesso negado: o perfil cadastrado é "' + perfil.perfil + '", mas precisa ser "superadmin".');
+        throw new Error('Acesso negado: o perfil cadastrado é "'+perfil.perfil+'", mas precisa ser "superadmin".');
       }
-      if (perfil.ativo === false) {
+      if(perfil.ativo===false){
         await fb.auth.signOut();
-        throw new Error('Esta conta de superadmin está marcada como ativo: false.');
+        throw new Error('Esta conta de superadmin está inativa.');
       }
 
-      SA.user = { uid: uidLogado, email: perfil.email || cred.user.email, nome: perfil.nome || 'Superadmin' };
+      SA.user={uid:uidLogado,email:perfil.email||cred.user.email,nome:perfil.nome||'Superadmin'};
+      SA.tab='usuarios';
       await saCarregarUsuarios();
-    } catch (e) {
-      console.error('Erro no login Superadmin:', e);
-      const detalhe = e && e.code ? erroAuth(e) + ' (' + e.code + ')' : (e && e.message ? e.message : String(e));
-      err.textContent = detalhe;
-      btn.disabled = false;
-      btn.textContent = 'Entrar no Painel Superadmin';
+    }catch(e){
+      const detalhe=e&&e.code?erroAuth(e)+' ('+e.code+')':(e&&e.message?e.message:String(e));
+      err.textContent=detalhe;
+      btn.disabled=false;
+      btn.textContent='Entrar no Painel Superadmin';
     }
   };
 
-  $('#saEnter').addEventListener('click', autenticarSuperadmin);
-  $('#saPass').addEventListener('keydown', e => { if (e.key === 'Enter') autenticarSuperadmin(); });
-  $('#saEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('#saPass').focus(); });
+  $('#saEnter').addEventListener('click',autenticarSuperadmin);
+  $('#saPass').addEventListener('keydown',e=>{if(e.key==='Enter')autenticarSuperadmin()});
+  $('#saEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('#saPass').focus()});
 }
-window.addEventListener('popstate',()=>{
-  if(isSuperadminRoute()){
-    if(SA.user)saCarregarUsuarios();
-    else saLoginView();
-  }else{
-    SA.user=null;
-    if(me)render();
-    else loginView();
-  }
-});
 
-
-
-
-/* 2. Carregamento dos usuários agrupados por empresa */
+/* 2. Carregamento dos usuários e logs agrupados por empresa */
 async function saCarregarUsuarios(){
-  $('#app').innerHTML='<div class="login"><p class="mu">Carregando usuários por empresa…</p></div>';
+  $('#app').innerHTML='<div class="login"><p class="mu">Carregando dados da plataforma…</p></div>';
   try{
     const raw=(await fb.db.ref('perfis').get()).val()||{};
     SA.profiles=raw;
@@ -446,9 +415,11 @@ async function saCarregarUsuarios(){
     )].sort();
 
     SA.companies=await Promise.all(empresaIds.map(async id=>{
-      let info={};
+      let info={},logs=[];
+      try{info=(await fb.db.ref('empresas/'+id+'/info').get()).val()||{}}catch(e){}
       try{
-        info=(await fb.db.ref('empresas/'+id+'/info').get()).val()||{};
+        const lVal=(await fb.db.ref('empresas/'+id+'/log').limitToLast(200).get()).val();
+        logs=arr(lVal).sort((a,b)=>(b.ts||0)-(a.ts||0));
       }catch(e){}
 
       const users=Object.entries(raw)
@@ -456,16 +427,16 @@ async function saCarregarUsuarios(){
         .map(([uid,p])=>({...p,uid}))
         .sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||'')));
 
-      return{id,nome:info.nome||id,users};
+      return{id,nome:info.nome||id,users,logs};
     }));
 
-    saRenderUsuarios();
+    saRenderPainel();
   }catch(e){
     $('#app').innerHTML=`
       <div class="admin-wrap">
         <div class="card">
-          <h2>Erro ao carregar usuários</h2>
-          <p class="mu">Verifique se o seu usuário possui permissão de leitura em <code>/perfis</code> e <code>/empresas</code> no Firebase Realtime Database.</p>
+          <h2>Erro ao carregar dados do Superadmin</h2>
+          <p class="mu">Verifique as regras do Firebase Realtime Database para <code>/perfis</code> e <code>/empresas</code>.</p>
           <div style="display:flex;gap:10px;margin-top:16px">
             <button class="btn" id="saRetry">Tentar novamente</button>
             <button class="btn s" id="saLogoutErr">Sair</button>
@@ -478,79 +449,120 @@ async function saCarregarUsuarios(){
   }
 }
 
-/* 3. Renderização do Painel de Usuários por Empresa */
-function saRenderUsuarios(){
+/* 3. Renderização do Painel Superadmin (Usuários por empresa + Log e auditoria) */
+function saRenderPainel(){
   const termo=SA.filtro.trim().toLowerCase();
 
-  const gruposFiltrados=SA.companies.map(c=>{
-    const users=c.users.filter(u=>{
-      if(!termo)return true;
-      return String(c.nome+' '+c.id+' '+(u.nome||'')+' '+(u.email||'')+' '+(u.perfil||'')).toLowerCase().includes(termo);
-    });
-    return{...c,users};
-  }).filter(c=>!termo||c.users.length>0);
+  let conteudoHtml='';
+  if(SA.tab==='log'){
+    const gruposLogs=SA.companies.map(c=>{
+      const logs=c.logs.filter(l=>!termo||JSON.stringify([c.nome,c.id,l.data,l.usuario,l.acao,l.entidade,l.detalhe]).toLowerCase().includes(termo));
+      return{...c,logs};
+    }).filter(c=>!termo||c.logs.length>0);
 
-  const htmlGrupos=gruposFiltrados.map(c=>`
-    <section class="card company-group">
-      <h3>
-        <span>Empresa: ${esc(c.nome)} <small class="mu">(chave: ${esc(c.id)})</small></span>
-        <small class="mu">${c.users.length} usuário(s)</small>
-      </h3>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Perfil</th>
-              <th>Status</th>
-              <th style="text-align:right">Ação</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${c.users.length?c.users.map(u=>{
-              const ativo=u.ativo===true;
-              return`
+    conteudoHtml=gruposLogs.map(c=>`
+      <section class="card company-group">
+        <h3>
+          <span>Empresa: ${esc(c.nome)} <small class="mu">(chave: ${esc(c.id)})</small></span>
+          <small class="mu">${c.logs.length} registro(s) de log</small>
+        </h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>
+            </thead>
+            <tbody>
+              ${c.logs.length?c.logs.map(l=>`
                 <tr>
-                  <td>${esc(u.nome||'—')}</td>
-                  <td>${esc(u.email||'—')}</td>
-                  <td>${esc(PERFIS[u.perfil]||u.perfil||'—')}</td>
-                  <td><span class="tag ${ativo?'':'off'}">${ativo?'Ativo':'Inativo'}</span></td>
-                  <td class="a">
-                    <button class="btn ${ativo?'d':'s'}" data-sa-toggle="${esc(u.uid)}">
-                      ${ativo?'Inativar':'Ativar'}
-                    </button>
-                  </td>
+                  <td>${esc(l.data||'—')}</td>
+                  <td>${esc(l.usuario||'—')}</td>
+                  <td><span class="tag">${esc(l.acao||'—')}</span></td>
+                  <td>${esc(l.entidade||'—')}</td>
+                  <td>${esc(l.detalhe||'—')}</td>
                 </tr>
-              `;
-            }).join(''):'<tr><td colspan="5" class="mu">Nenhum usuário vinculado a esta empresa.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  `).join('');
+              `).join(''):'<tr><td colspan="5" class="mu">Nenhum registro de auditoria para esta empresa.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `).join('')||'<div class="card empty">Nenhum registro de log encontrado.</div>';
+  }else{
+    const gruposFiltrados=SA.companies.map(c=>{
+      const users=c.users.filter(u=>{
+        if(!termo)return true;
+        return String(c.nome+' '+c.id+' '+(u.nome||'')+' '+(u.email||'')+' '+(u.perfil||'')).toLowerCase().includes(termo);
+      });
+      return{...c,users};
+    }).filter(c=>!termo||c.users.length>0);
+
+    conteudoHtml=gruposFiltrados.map(c=>`
+      <section class="card company-group">
+        <h3>
+          <span>Empresa: ${esc(c.nome)} <small class="mu">(chave: ${esc(c.id)})</small></span>
+          <small class="mu">${c.users.length} usuário(s)</small>
+        </h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Perfil</th>
+                <th>Status</th>
+                <th style="text-align:right">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${c.users.length?c.users.map(u=>{
+                const ativo=u.ativo===true;
+                return`
+                  <tr>
+                    <td>${esc(u.nome||'—')}</td>
+                    <td>${esc(u.email||'—')}</td>
+                    <td>${esc(PERFIS[u.perfil]||u.perfil||'—')}</td>
+                    <td><span class="tag ${ativo?'':'off'}">${ativo?'Ativo':'Inativo'}</span></td>
+                    <td class="a">
+                      <button class="btn ${ativo?'d':'s'}" data-sa-toggle="${esc(u.uid)}">
+                        ${ativo?'Inativar':'Ativar'}
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join(''):'<tr><td colspan="5" class="mu">Nenhum usuário vinculado a esta empresa.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `).join('')||'<div class="card empty">Nenhum usuário encontrado. Clique em “+ Criar usuário” para cadastrar.</div>';
+  }
 
   $('#app').innerHTML=`
     <header class="sa-header">
       <b>in<span>sight</span> · Painel Superadmin</b>
-      <div style="display:flex;gap:10px;align-items:center">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <span class="mu" style="font-size:13px">${esc(SA.user?.email||'')}</span>
         <button class="btn" id="saNewUser">+ Criar usuário</button>
         <button class="btn s" id="saOut">Sair</button>
       </div>
     </header>
     <div class="admin-wrap">
+      <div class="bt">
+        <button class="btn s ${SA.tab==='usuarios'?'on':''}" id="saTabUsers">Usuários por empresa</button>
+        <button class="btn s ${SA.tab==='log'?'on':''}" id="saTabLogs">Log e auditoria</button>
+      </div>
       <div class="sa-toolbar">
         <div>
-          <h1 style="margin:0;font-size:26px">Usuários por empresa</h1>
-          <p class="mu" style="margin:4px 0 0">Usuários inativados são bloqueados imediatamente no login principal.</p>
+          <h1 style="margin:0;font-size:26px">${SA.tab==='log'?'Log e auditoria por empresa':'Usuários por empresa'}</h1>
+          <p class="mu" style="margin:4px 0 0">${SA.tab==='log'?'Histórico de ações registradas nas empresas.':'Usuários inativados são bloqueados imediatamente no login principal.'}</p>
         </div>
-        <input id="saSearch" type="text" placeholder="Filtrar empresa, nome ou e-mail…" value="${esc(SA.filtro)}">
+        <input id="saSearch" type="text" placeholder="Filtrar…" value="${esc(SA.filtro)}">
       </div>
-      ${htmlGrupos||'<div class="card empty">Nenhum usuário encontrado. Clique em “+ Criar usuário” para cadastrar.</div>'}
+      ${conteudoHtml}
     </div>
   `;
 
+  $('#saTabUsers').onclick=()=>{SA.tab='usuarios';saRenderPainel()};
+  $('#saTabLogs').onclick=()=>{SA.tab='log';saRenderPainel()};
   $('#saNewUser').onclick=()=>saAbrirModalCriarUsuario();
   $('#saOut').onclick=()=>saSair();
 
@@ -558,7 +570,7 @@ function saRenderUsuarios(){
   searchInput.oninput=e=>{
     SA.filtro=e.target.value;
     const pos=searchInput.selectionStart;
-    saRenderUsuarios();
+    saRenderPainel();
     const novoInput=$('#saSearch');
     if(novoInput){novoInput.focus();novoInput.setSelectionRange(pos,pos);}
   };
@@ -568,11 +580,11 @@ function saRenderUsuarios(){
   });
 }
 
-/* 4. Inativar / Ativar usuário (bloqueia login na aplicação principal) */
+/* 4. Inativar / Ativar usuário */
 async function saAlternarStatusUsuario(targetUid){
   const p=SA.profiles[targetUid];
   if(!p)return;
-  const novoStatus=p.ativo!==true; // se estava ativo (true), passa a false; se inativo, passa a true
+  const novoStatus=p.ativo!==true;
 
   try{
     await fb.db.ref('perfis/'+targetUid+'/ativo').set(novoStatus);
@@ -654,7 +666,7 @@ function saAbrirModalCriarUsuario(){
       er.textContent='Preencha empresa, nome e um e-mail válido.';
       return;
     }
-    if(senhaDigitada && senhaDigitada.length<6){
+    if(senhaDigitada&&senhaDigitada.length<6){
       er.textContent='A senha inicial deve ter no mínimo 6 caracteres.';
       return;
     }
@@ -673,7 +685,6 @@ function saAbrirModalCriarUsuario(){
       await fb.db.ref('perfis/'+novoUid).set(dadosPerfil);
       await fb.db.ref('empresas/'+empresa+'/usuarios/'+novoUid).set({...dadosPerfil,id:novoUid});
 
-      // Garante que o nó info da empresa exista caso seja uma empresa nova
       const infoSnap=await fb.db.ref('empresas/'+empresa+'/info').get();
       if(!infoSnap.exists()){
         await fb.db.ref('empresas/'+empresa+'/info').set({nome:empresa});
@@ -697,7 +708,7 @@ function saAbrirModalCriarUsuario(){
 }
 
 async function saSair(){
-  SA={profiles:{},companies:[],user:null,filtro:''};
+  SA={profiles:{},companies:[],user:null,filtro:'',tab:'usuarios',logsEmp:{}};
   try{await fb.auth.signOut()}catch(e){}
   saLoginView();
 }
